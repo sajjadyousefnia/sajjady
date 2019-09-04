@@ -23,8 +23,11 @@ object MyClass {
     fun main(args: Array<String>) {
         embeddedServer(Netty, port) {
             routing {
-                get("/") {
-                    call.respond("morteza farhadi")
+                get("/{text}") {
+                    val responseText = call.parameters["text"]
+                    if (responseText != null) {
+                        call.respond(responseText)
+                    }
                 }
                 get("/hello") {
                     call.respond(HttpStatusCode.Accepted, "Hello")
