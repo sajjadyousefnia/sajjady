@@ -45,7 +45,7 @@ dependencies {
     
 }
 
-mainClassName = 'com.example.ApplicationKt'
+mainClassName = 'com.example.ApplicationKt.main'
 task stage {
     dependsOn installDist
 }
