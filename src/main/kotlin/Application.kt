@@ -20,8 +20,8 @@ val port = System.getenv("PORT")?.toInt() ?: 23567
 fun main(args: Array<String>) {
     embeddedServer(Netty, port) {
         routing {
-            get("/") {
-                call.respondText("sajjad", ContentType.Text.Html)
+            get("/sajjad") {
+                call.respondText("sajjadelnino")
             }
         }
     }.start(wait = true)
