@@ -24,7 +24,7 @@ object MyClass {
         embeddedServer(Netty, port) {
             routing {
                 get("/{text}") {
-                    val responseText = call.parameters["text"]
+                    val responseText = call.parameters["text"]?.toString()
                     if (responseText != null) {
                         call.respond(responseText)
                     }
