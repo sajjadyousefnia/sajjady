@@ -24,7 +24,7 @@ object MyClass {
         embeddedServer(Netty, port) {
             routing {
                 get("/") {
-                    call.respond("I'm alive!")
+                    call.respond("morteza farhadi")
                 }
                 get("/hello") {
                     call.respond(HttpStatusCode.Accepted, "Hello")
