@@ -18,9 +18,9 @@ import io.ktor.server.netty.*
 
 val port = System.getenv("PORT")?.toInt() ?: 23567
 fun main(args: Array<String>) {
-    embeddedServer(Netty, port) {
+    embeddedServer(Netty, 8080) {
         routing {
-            get("/sajjad") {
+            get("/") {
                 call.respondText("sajjadelnino")
             }
         }
