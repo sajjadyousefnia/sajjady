@@ -1,1 +1,1 @@
-web: ./build/install/sajjady/bin/sajjady.sajjady
+web: ./build/install/sajjady.sajjady/bin/sajjady

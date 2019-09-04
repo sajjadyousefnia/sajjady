@@ -16,9 +16,9 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 
-
+val port = System.getenv("PORT")?.toInt() ?: 23567
 fun main(args: Array<String>) {
-    embeddedServer(Netty, 8080) {
+    embeddedServer(Netty, port) {
         routing {
             get("/") {
                 call.respondText("sajjad", ContentType.Text.Html)
