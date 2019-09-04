@@ -20,8 +20,17 @@ val port = System.getenv("PORT")?.toInt() ?: 23567
 fun main(args: Array<String>) {
     embeddedServer(Netty, 8080) {
         routing {
-            get("/") {
-                call.respondText("sajjadelnino")
+            get("") {
+                call.respond("I'm alive!")
+            }
+            get("hello") {
+                call.respond(HttpStatusCode.Accepted, "Hello")
+            }
+            get("random/{min}/{max}") {
+                val min = call.parameters["min"]?.toIntOrNull() ?: 0
+                val max = call.parameters["max"]?.toIntOrNull() ?: 10
+                val randomString = "${(min until max).shuffled().last()}"
+                call.respond(randomString)
             }
         }
     }.start(wait = true)
