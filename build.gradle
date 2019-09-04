@@ -45,7 +45,7 @@ dependencies {
     
 }
 
-mainClassName = 'com.example.sajjady.application'
+mainClassName = 'com.example.application'
 task stage {
     dependsOn installDist
 }

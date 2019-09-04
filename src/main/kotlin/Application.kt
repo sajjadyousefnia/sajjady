@@ -20,10 +20,10 @@ val port = System.getenv("PORT")?.toInt() ?: 23567
 fun main(args: Array<String>) {
     embeddedServer(Netty, port) {
         routing {
-            post("") {
+            post("/") {
                 call.respond("I'm alive!")
             }
-            post("hello") {
+            post("/hello") {
                 call.respond(HttpStatusCode.Accepted, "Hello")
             }
             post("random/{min}/{max}") {
