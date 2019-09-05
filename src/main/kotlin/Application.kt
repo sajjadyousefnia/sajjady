@@ -15,6 +15,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import java.time.LocalTime
 
 val port = System.getenv("PORT")?.toInt() ?: 23567
 
@@ -24,10 +25,20 @@ object MyClass {
         embeddedServer(Netty, port) {
             routing {
                 get("/{text}") {
-                    val responseText = call.parameters["text"]?.toString()
+                   // val responseText = call.parameters["text"]?.toString()
+/*
                     if (responseText != null) {
                         call.respond(responseText)
                     }
+*/
+                    println("Job started at ${LocalTime.now()}\r\n")
+
+                    executeBranchingSearch()
+                    ScheduledClass.all.sortedBy { it.start }.forEach {
+                        call.respond("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
+                    }
+
+
                 }
                 get("/hello") {
                     call.respond(HttpStatusCode.Accepted, "Hello")
