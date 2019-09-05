@@ -1,3 +1,8 @@
 package com.example
 
-data class ExampleDataClass(val hello: String);
+import com.google.gson.annotations.SerializedName
+
+data class ExampleDataClass(
+    @SerializedName("hello")
+    val hello: String
+);

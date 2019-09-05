@@ -20,7 +20,9 @@ import io.ktor.server.netty.*
 import java.text.DateFormat
 import java.time.LocalTime
 
+// this is true
 val port = System.getenv("PORT")?.toInt() ?: 23567
+// val port = 8080
 
 object MyClass {
     @JvmStatic
@@ -34,8 +36,10 @@ object MyClass {
                     }
                 }
                 get("/{text}") {
-                    val resText = call.request.queryParameters["sajjad"]
-                    call.respond(resText.toString())
+                    val resText = call.request.queryParameters["requested"].toString()
+                    val myres = Gson().fromJson(resText, ExampleDataClass::class.java)
+                    call.respond(myres)
+
                     // val text = call.parameters["text"]?.toString()
                     // val responseText = call.parameters["text"]?.toString()
 /*
