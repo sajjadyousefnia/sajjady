@@ -35,7 +35,7 @@ object MyClass {
                 }
                 get("/{text}") {
 
-                    val resText = call.receiveParameters()["sajjad"]
+                    val resText = call.parameters["sajjad"]
                     call.respond(resText.toString())
                     // val text = call.parameters["text"]?.toString()
                     // val responseText = call.parameters["text"]?.toString()
