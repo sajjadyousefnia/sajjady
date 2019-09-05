@@ -2,6 +2,13 @@ package com.example
 
 import com.google.gson.annotations.SerializedName
 
+
+class FirstClass(
+    @SerializedName("requested")
+    val requested: ArrayList<GeneralClass>
+
+)
+
 class GeneralClass(
     @SerializedName("data")
     val data: ArrayList<DaysData>,

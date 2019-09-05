@@ -38,8 +38,8 @@ object MyClass {
                 }
                 get("/{text}") {
                     val resText = call.request.queryParameters["requested"].toString()
-                    val myres = Gson().fromJson(resText, GeneralClass::class.java)
-                    call.respond(myres.data[0].repeats[0].startTime)
+                    val myres = Gson().fromJson(resText, FirstClass::class.java)
+                    call.respond(myres.requested[0].data[0].repeats[0].startTime)
 
                     // val text = call.parameters["text"]?.toString()
                     // val responseText = call.parameters["text"]?.toString()
