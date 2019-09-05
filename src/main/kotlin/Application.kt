@@ -38,7 +38,7 @@ object MyClass {
                 get("/{text}") {
                     val resText = call.request.queryParameters["requested"].toString()
                     val myres = Gson().fromJson(resText, ExampleDataClass::class.java)
-                    call.respond(myres)
+                    call.respond(myres.hello)
 
                     // val text = call.parameters["text"]?.toString()
                     // val responseText = call.parameters["text"]?.toString()
