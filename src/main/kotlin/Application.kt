@@ -1,5 +1,6 @@
 package com.example
 
+import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.features.ContentNegotiation
 import io.ktor.response.*
@@ -10,11 +11,13 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.application.*
+import io.ktor.gson.gson
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import java.text.DateFormat
 import java.time.LocalTime
 
 val port = System.getenv("PORT")?.toInt() ?: 23567
@@ -24,21 +27,30 @@ object MyClass {
     fun main(args: Array<String>) {
         embeddedServer(Netty, port) {
             routing {
+                install(ContentNegotiation) {
+                    gson {
+                        setDateFormat(DateFormat.LONG)
+                        setPrettyPrinting()
+                    }
+                }
                 get("/{text}") {
-                   // val responseText = call.parameters["text"]?.toString()
+
+                    val resText = call.receiveParameters()["sajjad"]
+                    call.respond(resText.toString())
+                    // val text = call.parameters["text"]?.toString()
+                    // val responseText = call.parameters["text"]?.toString()
 /*
                     if (responseText != null) {
                         call.respond(responseText)
                     }
 */
+
                     println("Job started at ${LocalTime.now()}\r\n")
 
                     executeBranchingSearch()
                     ScheduledClass.all.sortedBy { it.start }.forEach {
                         call.respond("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
                     }
-
-
                 }
                 get("/hello") {
                     call.respond(HttpStatusCode.Accepted, "Hello")

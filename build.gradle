@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.11"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.50"
     }
 }
 apply plugin: 'java'
@@ -37,13 +37,14 @@ repositories {
 dependencies {
     // compile ' org.apache.cassandra:cassandra-all:0.8.1'
     compile "io.ktor:ktor-server-netty:1.2.2"
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.50"
     compile "io.ktor:ktor-server-core:1.2.4"
+    compile "io.ktor:ktor-gson:1.2.2"
     testCompile group: 'junit', name: 'junit', version: '4.12'
     // compile files('com/examp le/slf4j-nop-1.7.28.jar') 
     compile "ch.qos.logback:logback-classic:1.2.1"
-
 }
+
 
 mainClassName = 'com.example.MyClass'
 task stage {
