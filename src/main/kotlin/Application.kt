@@ -34,8 +34,7 @@ object MyClass {
                     }
                 }
                 get("/{text}") {
-
-                    val resText = call.parameters["sajjad"]
+                    val resText = call.request.queryParameters["sajjad"]
                     call.respond(resText.toString())
                     // val text = call.parameters["text"]?.toString()
                     // val responseText = call.parameters["text"]?.toString()
@@ -44,13 +43,13 @@ object MyClass {
                         call.respond(responseText)
                     }
 */
-
+/*
                     println("Job started at ${LocalTime.now()}\r\n")
 
                     executeBranchingSearch()
                     ScheduledClass.all.sortedBy { it.start }.forEach {
                         call.respond("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
-                    }
+                    }*/
                 }
                 get("/hello") {
                     call.respond(HttpStatusCode.Accepted, "Hello")
