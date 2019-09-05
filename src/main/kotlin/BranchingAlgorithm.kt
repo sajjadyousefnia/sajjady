@@ -50,7 +50,8 @@ class BranchNode(
     }
 }
 
-fun executeBranchingSearch() {
+/*
+  fun executeBranchingSearch() {
 
     // pre-constraints
     ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
@@ -106,4 +107,4 @@ fun executeBranchingSearch() {
     val solution = traverse()
 
     solution?.traverseBackwards?.forEach { it.applySolution() } ?: throw Exception("Infeasible")
-}
+}*/
