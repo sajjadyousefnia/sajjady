@@ -44,6 +44,7 @@ object MyClass {
                         val resText = call.request.queryParameters["requested"].toString()
                         val myres = Gson().fromJson(resText, FirstClass::class.java)
                         log.debug(resText)
+                        createABatchOfClasses(myres, 0)
                         executeBranchingSearch(myres, this@embeddedServer)
                         var resForRes = ""
                         ScheduledClass.all!!.sortedBy { it.start }.forEach {
@@ -185,8 +186,8 @@ object MyClass {
     // classes
 
 
-    fun createABatchOfClasses(input: FirstClass, i: Int):Boolean {
-       // scheduledClasses = null
+    fun createABatchOfClasses(input: FirstClass, i: Int): Boolean {
+        // scheduledClasses = null
         scheduledClasses = arrayListOf<ScheduledClass>()
         input.requested.forEach {
             val courseName = it.courseName
