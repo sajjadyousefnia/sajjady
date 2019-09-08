@@ -1,6 +1,5 @@
 package com.example
 
-import com.example.MyClass.executeBranchingSearch
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -15,8 +14,9 @@ val breaks = listOf<ClosedRange<LocalTime>>(
 )
 
 
-// classes
-val scheduledClasses = listOf(
+/*
+    // classes
+    val scheduledClasses = listOf(
     ScheduledClass(id = 1, name = "Psych 101", hoursLength = 1.0, recurrences = 2),
     ScheduledClass(id = 2, name = "English 101", hoursLength = 1.5, recurrences = 3),
     ScheduledClass(id = 3, name = "Math 300", hoursLength = 1.5, recurrences = 2),
@@ -27,14 +27,15 @@ val scheduledClasses = listOf(
     ScheduledClass(id = 8, name = "Biology 101", hoursLength = 1.0, recurrences = 2),
     ScheduledClass(id = 9, name = "Supply Chain 300", hoursLength = 2.5, recurrences = 2),
     ScheduledClass(id = 10, name = "Orientation 101", hoursLength = 1.0, recurrences = 1)
-)
+    )
+*/
 
 fun main(args: Array<String>) {
 
     println("Job started at ${LocalTime.now()}\r\n")
 
-    executeBranchingSearch()
-    ScheduledClass.all.sortedBy { it.start }.forEach {
+   // executeBranchingSearch(myres)
+    ScheduledClass.all!!.sortedBy { it.start }.forEach {
         println("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
     }
 

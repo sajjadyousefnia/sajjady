@@ -6,14 +6,15 @@ import com.google.gson.annotations.SerializedName
 class FirstClass(
     @SerializedName("requested")
     val requested: ArrayList<GeneralClass>
-
 )
 
 class GeneralClass(
+    @SerializedName("courseName")
+    val courseName: String,
     @SerializedName("data")
     val data: ArrayList<DaysData>,
-    @SerializedName("courseName")
-    val courseName: String
+    @SerializedName("recurrences")
+    val recurrences: Int
 );
 
 data class DaysData(

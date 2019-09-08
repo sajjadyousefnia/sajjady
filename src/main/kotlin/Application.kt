@@ -4,31 +4,34 @@ import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.features.ContentNegotiation
 import io.ktor.response.*
-import io.ktor.request.*
-import io.ktor.routing.get
-import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.application.*
 import io.ktor.gson.gson
-import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.routing.HttpHeaderRouteSelector
 import java.text.DateFormat
-import java.time.DayOfWeek
-import java.time.LocalTime
+
+
+//
+
+import io.ktor.routing.post
+import io.ktor.server.engine.EngineAPI
+import io.ktor.server.engine.addShutdownHook
+import io.ktor.server.engine.stopServerOnCancellation
+import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.runBlocking
 
 // this is true
 val port = System.getenv("PORT")?.toInt() ?: 23567
 // val port = 8080
+public lateinit var scheduledClasses: ArrayList<ScheduledClass>
 
 object MyClass {
     @JvmStatic
     fun main(args: Array<String>) {
-        embeddedServer(Netty, port) {
+
+        val es = embeddedServer(Netty, port) {
+
             routing {
                 install(ContentNegotiation) {
                     gson {
@@ -36,46 +39,65 @@ object MyClass {
                         setPrettyPrinting()
                     }
                 }
-                get("/{text}") {
-                    val resText = call.request.queryParameters["requested"].toString()
-                    val myres = Gson().fromJson(resText, FirstClass::class.java)
-                    call.respond(myres.requested[0].data[0].repeats[0].startTime)
+                post("/{text}") {
+                    try {
+                        val resText = call.request.queryParameters["requested"].toString()
+                        val myres = Gson().fromJson(resText, FirstClass::class.java)
+                        log.debug(resText)
+                       if( createABatchOfClasses(myres, 0)
+                        executeBranchingSearch(myres, this@embeddedServer)
+                        var resForRes = ""
+                        ScheduledClass.all!!.sortedBy { it.start }.forEach {
+                            resForRes += (
+                                    "${it.name}- ${it.daysOfWeek.joinToString("/")}" +
+                                            " ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
+                        }
+                        call.respond(resForRes)
+                        // log.debug(scheduledClasses.toString())
+                    } catch (e: Exception) {
+                        call.respond {
+                            var tempString = ""
+                            scheduledClasses!!.forEach {
+                                tempString += it
+                            }
+                            return@respond tempString
+                        }
+                        // call.respond(e.toString() + "\n" + e.localizedMessage.toString())
 
-                    // val text = call.parameters["text"]?.toString()
-                    // val responseText = call.parameters["text"]?.toString()
-/*
-                    if (responseText != null) {
-                        call.respond(responseText)
+                        // log.debug(scheduledClasses.toString())
                     }
-*/
-/*
-                    println("Job started at ${LocalTime.now()}\r\n")
 
-                    executeBranchingSearch()
-                    ScheduledClass.all.sortedBy { it.start }.forEach {
-                        call.respond("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
-                    }*/
                 }
+/*
                 get("/hello") {
                     call.respond(HttpStatusCode.Accepted, "Hello")
                 }
+*/
+/*
                 get("random/{min}/{max}") {
                     val min = call.parameters["min"]?.toIntOrNull() ?: 0
                     val max = call.parameters["max"]?.toIntOrNull() ?: 10
                     val randomString = "${(min until max).shuffled().last()}"
                     call.respond(randomString)
                 }
+*/
             }
-        }.start(wait = true)
+        }
+        es.start(wait = true)
+
     }
 
-    fun executeBranchingSearch() {
+    fun executeBranchingSearch(
+        myres: FirstClass,
+        pipelineContext: Application
+    ) {
 
-        // pre-constraints
-        ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
+        Slot.all.filter { !isExisting(myres, it) }.forEach { it.selected = 0 }
+        ScheduledClass.all!!.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
 
         // Try to encourage most "constrained" slots to be evaluated first
-        val sortedSlots = Slot.all.asSequence().filter { it.selected == null }.sortedWith(
+        val sortedSlots = Slot.all.asSequence().filter { it.selected == null }./*sortedWith(
+*//*
             compareBy(
                 {
                     // prioritize slots dealing with recurrences
@@ -92,10 +114,15 @@ object MyClass {
                 },
                 { it.block.range.start }, // make search start at beginning of week
                 { -it.scheduledClass.slotsNeededPerSession } // followed by class length,
-
             )
-        ).toList()
+*//*
+        ).*/toList()
 
+        /* var slotsVaue = ""
+         Slot.all.forEach { slotsVaue += (it.block.toString() + " \n " + it.scheduledClass.toString() + " \n ") }
+         call!!.respond(
+             slotsVaue
+         )*/
         // this is a recursive function for exploring nodes in a branch-and-bound tree
         fun traverse(currentBranch: BranchNode? = null): BranchNode? {
 
@@ -119,12 +146,60 @@ object MyClass {
             return null
         }
 
-
         // start with the first Slot and set it as the seed
         // recursively traverse from the seed and get a solution
         val solution = traverse()
 
         solution?.traverseBackwards?.forEach { it.applySolution() } ?: throw Exception("Infeasible")
+        // scheduledClasses.clear()
     }
+
+    private fun isExisting(firstClass: FirstClass, slot: Slot): Boolean {
+
+        firstClass.requested.forEach {
+            if (it.courseName == slot.scheduledClass.name) {
+                it.data.forEach {
+                    if (it.day == slot.block.range.start.dayOfWeek.name) {
+                        it.repeats.forEach {
+                            if (slot.block.timeRange.start.hour > it.startTime.split(":")[0].toInt() && slot.block.timeRange.endInclusive.hour < it.endTime.split(
+                                    ":"
+                                )[0].toInt()
+                            ) {
+                                return true
+                            } else if (slot.block.timeRange.start.hour == it.startTime.split(":")[0].toInt()) {
+                                if (slot.block.timeRange.start.minute >= it.startTime.split(":")[1].toInt()) {
+                                    return true
+                                } else if (slot.block.timeRange.endInclusive.minute <= it.endTime.split(":")[1].toInt()) {
+                                    return true
+                                }
+
+                            }
+                        }
+                    }
+                }
+                return false
+            }
+        }
+        return true
+    }
+
+    // classes
+
+
+    fun createABatchOfClasses(input: FirstClass, i: Int):Boolean {
+       // scheduledClasses = null
+        scheduledClasses = arrayListOf<ScheduledClass>()
+        input.requested.forEach {
+            val courseName = it.courseName
+            it.data.forEach {
+                it.repeats.forEach {
+                    scheduledClasses!!.add(ScheduledClass(i + 1, courseName, 1.5, 1, 0))
+                }
+            }
+        }
+        return true
+    }
+
+
 }
 

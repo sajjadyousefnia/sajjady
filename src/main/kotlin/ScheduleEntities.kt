@@ -16,7 +16,7 @@ data class Block(val range: ClosedRange<LocalDateTime>) {
                 timeRange.endInclusive in operatingDay
 
     val affectingSlots by lazy {
-        ScheduledClass.all.asSequence()
+        ScheduledClass.all!!.asSequence()
             .flatMap {
                 it.affectingSlotsFor(this).asSequence()
             }.toSet()
@@ -122,7 +122,7 @@ data class Slot(val block: Block, val scheduledClass: ScheduledClass) {
 
         val all by lazy {
             Block.all.asSequence().flatMap { b ->
-                ScheduledClass.all.asSequence().map { Slot(b, it) }
+                ScheduledClass.all!!.asSequence().map { Slot(b, it) }
             }.toList()
         }
     }

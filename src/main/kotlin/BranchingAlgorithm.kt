@@ -40,7 +40,7 @@ class BranchNode(
             .filter { it.selectedValue == 1 }
             .map { it.slot.scheduledClass }
             .distinct()
-            .count() == ScheduledClass.all.count()
+            .count() == ScheduledClass.all!!.count()
 
     val isContinuable get() = !scheduleMet && remainingSlots.count() > 0
     val isSolution get() = scheduleMet
