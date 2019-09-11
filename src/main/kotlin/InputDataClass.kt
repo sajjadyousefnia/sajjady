@@ -3,6 +3,7 @@ package com.example
 import com.google.gson.annotations.SerializedName
 
 
+/*
 class FirstClass(
     @SerializedName("requested")
     val requested: ArrayList<GeneralClass>
@@ -30,3 +31,4 @@ data class RepeatClass(
     @SerializedName("endTime")
     val endTime: String
 )
+*/

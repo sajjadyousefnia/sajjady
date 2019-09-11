@@ -23,7 +23,6 @@ data class Block(val range: ClosedRange<LocalDateTime>) {
     }
 
     companion object {
-
         /* All operating blocks for the entire week, broken up in 15 minute increments */
         val all by lazy {
             generateSequence(operatingDates.start.atStartOfDay()) { dt ->
@@ -122,7 +121,7 @@ data class Slot(val block: Block, val scheduledClass: ScheduledClass) {
 
         val all by lazy {
             Block.all.asSequence().flatMap { b ->
-                ScheduledClass.all!!.asSequence().map { Slot(b, it) }
+                ScheduledClass.all.asSequence().map { Slot(b, it) }
             }.toList()
         }
     }

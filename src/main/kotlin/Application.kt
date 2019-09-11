@@ -8,30 +8,26 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.gson.gson
-import io.ktor.routing.HttpHeaderRouteSelector
 import java.text.DateFormat
 
 
 //
 
 import io.ktor.routing.post
-import io.ktor.server.engine.EngineAPI
-import io.ktor.server.engine.addShutdownHook
-import io.ktor.server.engine.stopServerOnCancellation
-import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.runBlocking
 
 // this is true
 val port = System.getenv("PORT")?.toInt() ?: 23567
 // val port = 8080
-public lateinit var scheduledClasses: ArrayList<ScheduledClass>
+var scheduledClasses = ArrayList<ScheduledClass>()
+var teachersFilledTimesList = arrayListOf<TeachersTotalFilledTimes>()
+var groupsTotalFilledTimesList = arrayListOf<GroupsTotalFilledTimes>()
+var lastId = 0
+var result = arrayListOf<ArrayList<ScheduledClass>>()
 
 object MyClass {
     @JvmStatic
     fun main(args: Array<String>) {
-
         val es = embeddedServer(Netty, port) {
-
             routing {
                 install(ContentNegotiation) {
                     gson {
@@ -41,63 +37,202 @@ object MyClass {
                 }
                 post("/{text}") {
                     try {
+                        lastId = 0
+                        result.clear()
                         val resText = call.request.queryParameters["requested"].toString()
                         val myres = Gson().fromJson(resText, FirstClass::class.java)
-                        log.debug(resText)
-                        createABatchOfClasses(myres, 0)
-                        executeBranchingSearch(myres, this@embeddedServer)
-                        var resForRes = ""
-                        ScheduledClass.all!!.sortedBy { it.start }.forEach {
-                            resForRes += (
-                                    "${it.name}- ${it.daysOfWeek.joinToString("/")}" +
-                                            " ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
-                        }
-                        call.respond(resForRes)
-                        // log.debug(scheduledClasses.toString())
-                    } catch (e: Exception) {
-                        call.respond {
-                            var tempString = ""
-                            scheduledClasses!!.forEach {
-                                tempString += it
+                        myres.generalList.teachersNames.forEach {
+                            val teacherTimes: ArrayList<JustTimeDataCLass> = arrayListOf()
+                            it.openDays.forEach {
+                                teacherTimes.add(JustTimeDataCLass(it.startTime, it.endTime, it.dayName))
                             }
-                            return@respond tempString
+                            teachersFilledTimesList.add(
+                                TeachersTotalFilledTimes(
+                                    teacherName = it.teacherName,
+                                    times = teacherTimes
+                                )
+                            )
                         }
-                        // call.respond(e.toString() + "\n" + e.localizedMessage.toString())
+                        for (groupsCounter in 0 until myres.generalList.entriesYears.size) {
+                            for (classCounter in 0 until myres.generalList.classesCount) {
+                                doSchedule(
+                                    myres.generalList.courseGroups,
+                                    groupsCounter, call
+                                )
 
-                        // log.debug(scheduledClasses.toString())
+                            }
+                        }
+
+                        var resultForPrint = ""
+                        result.forEach {
+                            resultForPrint += it.toString()
+                        }
+                        call.respond(resultForPrint)
+                    } catch (e: Exception) {
+                        call.respond(e.toString() + "\n" + e.localizedMessage.toString() + "\n" + e.printStackTrace())
                     }
 
                 }
-/*
-                get("/hello") {
-                    call.respond(HttpStatusCode.Accepted, "Hello")
-                }
-*/
-/*
-                get("random/{min}/{max}") {
-                    val min = call.parameters["min"]?.toIntOrNull() ?: 0
-                    val max = call.parameters["max"]?.toIntOrNull() ?: 10
-                    val randomString = "${(min until max).shuffled().last()}"
-                    call.respond(randomString)
-                }
-*/
             }
         }
         es.start(wait = true)
 
     }
 
-    fun executeBranchingSearch(
-        myres: FirstClass,
-        pipelineContext: Application
+    private suspend fun doSchedule(
+        courseGroups: java.util.ArrayList<CourseGroupsDataClass>,
+        groupsCounter: Int,
+        call: ApplicationCall
     ) {
 
-        Slot.all.filter { !isExisting(myres, it) }.forEach { it.selected = 0 }
-        ScheduledClass.all!!.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
+        createScheduledClasses(courseGroups, call)
+        filterByTeacher(courseGroups[groupsCounter], call)
+        filterByEducationGroup(courseGroups[groupsCounter])
+        executeBranchingSearch(call)
+        result.add(ScheduledClass.all)
+    }
 
-        // Try to encourage most "constrained" slots to be evaluated first
-        val sortedSlots = Slot.all.asSequence().filter { it.selected == null }./*sortedWith(
-*//*
+
+    private fun filterByEducationGroup(courseGroups: CourseGroupsDataClass) {
+        Slot.all.filter {
+            !isInGroup(it, courseGroups.presentedCourses, courseGroups.courseYear)
+        }.forEach { it.selected = 0 }
+    }
+
+    private fun isInGroup(slot: Slot, courseGroups: ArrayList<CourseDataClass>, entranceYear: Int): Boolean {
+        courseGroups.forEach {
+            groupsTotalFilledTimesList.filter { it.groupYear == entranceYear }.forEach {
+                it.times.forEach {
+                    if (it.dayName == slot.block.range.start.dayOfWeek.name) {
+                        if (checkOneIsBetweenTwoByHourAndMinutes(
+                                firstStartTimeMinute =
+                                slot.block.timeRange.start.minute.toString(),
+                                firstStartTimeHour = slot.block.timeRange.start.hour.toString(),
+                                firstEndTimeMinute = slot.block.timeRange.endInclusive.minute.toString(),
+                                firstEndTimeHour = slot.block.timeRange.endInclusive.hour.toString(),
+                                secondStartTimeMinute = it.startTime.split(":")[1],
+                                secondStartTimeHour = it.startTime.split(":")[0],
+                                secondEndTimeMinute = it.endTime.split(":")[1],
+                                secondEndTimeHour = it.endTime.split(":")[0]
+                            )
+                        ) {
+                            return false
+                        }
+
+                    }
+                }
+            }
+        }
+        return true
+    }
+
+    private fun filterByTeacher(
+        courseGroups: CourseGroupsDataClass,
+        call: ApplicationCall
+    ) {
+        Slot.all.filter {
+            !isTeacher(it, courseGroups.presentedCourses)
+        }.forEach { it.selected = 0 }
+    }
+
+    private fun isTeacher(slot: Slot, courseGroups: ArrayList<CourseDataClass>): Boolean {
+        courseGroups.forEach {
+            if (it.courseName == slot.scheduledClass.name) {
+                val teacherName = it.teacher
+                val teacherTimes = teachersFilledTimesList.findLast {
+                    it.teacherName == teacherName
+                }!!.times
+                teacherTimes.forEach {
+                    if (it.dayName == slot.block.range.start.dayOfWeek.name) {
+                        if (checkOneIsBetweenTwoByHourAndMinutes(
+                                firstEndTimeHour = slot.block.timeRange.start.hour.toString(),
+                                firstEndTimeMinute = slot.block.timeRange.endInclusive.minute.toString(),
+                                firstStartTimeHour = slot.block.timeRange.start.hour.toString(),
+                                firstStartTimeMinute = slot.block.timeRange.start.minute.toString(),
+                                secondEndTimeHour = it.endTime.split(":")[0].toString(),
+                                secondEndTimeMinute = it.endTime.split(":")[1].toString(),
+                                secondStartTimeHour = it.startTime.split(":")[0].toString(),
+                                secondStartTimeMinute = it.startTime.split(":")[1].toString()
+                            )
+                        ) return false
+                    }
+                }
+            }
+        }
+        return true
+    }
+
+    private fun checkOneIsBetweenTwoByHourAndMinutes(
+        firstStartTimeHour: String,
+        firstEndTimeHour: String,
+        secondStartTimeHour: String,
+        secondEndTimeHour: String,
+        firstStartTimeMinute: String,
+        firstEndTimeMinute: String,
+        secondStartTimeMinute: String,
+        secondEndTimeMinute: String
+    ): Boolean {
+        if (firstStartTimeHour.toInt() > secondStartTimeHour.toInt() && firstEndTimeHour.toInt() < secondEndTimeHour.toInt()) {
+            return true
+
+        } else if (firstStartTimeHour.toInt() == secondStartTimeHour.toInt() && firstEndTimeHour.toInt() == secondEndTimeHour.toInt()) {
+            if (secondEndTimeMinute.toInt().isAfter(firstEndTimeMinute.toInt())) {
+                return true
+            }
+            if (firstStartTimeMinute.toInt().isAfter(secondStartTimeMinute.toInt())) {
+                return true
+            }
+        } else if (firstStartTimeHour.toInt() > secondStartTimeHour.toInt() && firstEndTimeHour.toInt() == secondEndTimeHour.toInt()) {
+            if (secondEndTimeMinute.toInt().isAfter(secondEndTimeMinute.toInt())) {
+                return true
+            }
+        } else if (firstEndTimeHour.toInt() == secondStartTimeHour.toInt() && firstEndTimeHour.toInt() < secondEndTimeHour.toInt()) {
+            if (firstStartTimeMinute.toInt().isAfter(secondStartTimeMinute.toInt())) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun Int.isAfter(value: Int): Boolean {
+        return (this >= value)
+    }
+
+    private fun createScheduledClasses(
+        courseGroups: java.util.ArrayList<CourseGroupsDataClass>,
+        call: ApplicationCall
+    ) {
+        scheduledClasses = ArrayList()
+        courseGroups.forEach {
+            it.presentedCourses.forEach {
+                scheduledClasses.add(
+                    ScheduledClass(
+                        id = ++lastId,
+                        name = it.courseName,
+                        hoursLength = 1.5,
+                        recurrenceGapDays = 0,
+                        recurrences = it.recurrences
+                    )
+                )
+            }
+        }
+
+
+    }
+
+
+}
+
+
+private fun resetTimeLimitations() = Slot.all.forEach { it.selected = null }
+
+
+suspend fun executeBranchingSearch(call: ApplicationCall) {
+    // Slot.all.filter { !isExisting(myres, it) }.forEach { it.selected = 0 }
+    ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
+    // Try to encourage most "constrained" slots to be evaluated first
+    val sortedSlots = Slot.all.asSequence().filter { it.selected == null }./*sortedWith(
+     *//*
             compareBy(
                 {
                     // prioritize slots dealing with recurrences
@@ -118,44 +253,44 @@ object MyClass {
 *//*
         ).*/toList()
 
-        /* var slotsVaue = ""
-         Slot.all.forEach { slotsVaue += (it.block.toString() + " \n " + it.scheduledClass.toString() + " \n ") }
-         call!!.respond(
-             slotsVaue
-         )*/
-        // this is a recursive function for exploring nodes in a branch-and-bound tree
-        fun traverse(currentBranch: BranchNode? = null): BranchNode? {
+    /* var slotsVaue = ""
+     Slot.all.forEach { slotsVaue += (it.block.toString() + " \n " + it.scheduledClass.toString() + " \n ") }
+     call!!.respond(
+         slotsVaue
+     )*/
+    // this is a recursive function for exploring nodes in a branch-and-bound tree
+    fun traverse(currentBranch: BranchNode? = null): BranchNode? {
 
-            if (currentBranch != null && currentBranch.remainingSlots.isEmpty()) {
-                return currentBranch
-            }
-
-            for (candidateValue in intArrayOf(1, 0)) {
-                val nextBranch = BranchNode(candidateValue, currentBranch?.remainingSlots ?: sortedSlots, currentBranch)
-
-                if (nextBranch.isSolution)
-                    return nextBranch
-
-                if (nextBranch.isContinuable) {
-                    val terminalBranch = traverse(nextBranch)
-                    if (terminalBranch?.isSolution == true) {
-                        return terminalBranch
-                    }
-                }
-            }
-            return null
+        if (currentBranch != null && currentBranch.remainingSlots.isEmpty()) {
+            return currentBranch
         }
 
-        // start with the first Slot and set it as the seed
-        // recursively traverse from the seed and get a solution
-        val solution = traverse()
+        for (candidateValue in intArrayOf(1, 0)) {
+            val nextBranch = BranchNode(candidateValue, currentBranch?.remainingSlots ?: sortedSlots, currentBranch)
 
-        solution?.traverseBackwards?.forEach { it.applySolution() } ?: throw Exception("Infeasible")
-        // scheduledClasses.clear()
+            if (nextBranch.isSolution)
+                return nextBranch
+
+            if (nextBranch.isContinuable) {
+                val terminalBranch = traverse(nextBranch)
+                if (terminalBranch?.isSolution == true) {
+                    return terminalBranch
+                }
+            }
+        }
+        return null
     }
 
-    private fun isExisting(firstClass: FirstClass, slot: Slot): Boolean {
+    // start with the first Slot and set it as the seed
+    // recursively traverse from the seed and get a solution
+    val solution = traverse()
 
+    solution?.traverseBackwards?.forEach { it.applySolution() } ?: throw Exception("Infeasible")
+    // scheduledClasses.clear()
+}
+
+/*
+    private fun isExisting(firstClass: FirstClass, slot: Slot): Boolean {
         firstClass.requested.forEach {
             if (it.courseName == slot.scheduledClass.name) {
                 it.data.forEach {
@@ -182,13 +317,16 @@ object MyClass {
         }
         return true
     }
+*/
 
-    // classes
+// classes
 
 
+/*
     fun createABatchOfClasses(input: FirstClass, i: Int): Boolean {
-        // scheduledClasses = null
+
         scheduledClasses = arrayListOf<ScheduledClass>()
+        //  Slot.all.forEach { it.selected = null }
         input.requested.forEach {
             val courseName = it.courseName
             it.data.forEach {
@@ -199,7 +337,8 @@ object MyClass {
         }
         return true
     }
+*/
 
 
-}
+
 

@@ -1,6 +1,5 @@
 package com.example
 
-import com.example.MyClass.createABatchOfClasses
 import com.google.gson.Gson
 import io.ktor.application.call
 import io.ktor.response.respond
@@ -82,7 +81,7 @@ val x = "{\n" +
     try {
         val resText = x
         val myres = Gson().fromJson(resText, FirstClass::class.java)
-        val testValue = createABatchOfClasses(myres, 0)
+     //   val testValue = createABatchOfClasses(myres, 0)
        // println(testValue.size)
         // MyClass.executeBranchingSearch(myres)
         //  var resForRes = ""
