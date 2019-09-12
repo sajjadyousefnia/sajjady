@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
 
     println("Job started at ${LocalTime.now()}\r\n")
 
-   // executeBranchingSearch(myres)
+    // executeBranchingSearch(myres)
     ScheduledClass.all!!.sortedBy { it.start }.forEach {
         println("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
     }

@@ -93,13 +93,13 @@ data class ScheduledClass(
             )
             .distinct()
             .onEach {
-                it.selected = 0
+                it.classIsSelected = 0
             }
             .toList()
     }
 
     /** translates and returns the optimized start time of the class */
-    val start get() = slots.asSequence().filter { it.selected == 1 }.map { it.block.range.start }.min()!!
+    val start get() = slots.asSequence().filter { it.classIsSelected == 1 }.map { it.block.range.start }.min()!!
 
     /** translates and returns the optimized end time of the class */
     val end get() = start.plusMinutes((hoursLength * 60.0).toLong())
@@ -115,10 +115,10 @@ data class ScheduledClass(
 
 data class Slot(val block: Block, val scheduledClass: ScheduledClass) {
 
-    var selected: Int? = null
+    var classIsSelected: Int? = null
+    var roomIsSelected: Int? = null
 
     companion object {
-
         val all by lazy {
             Block.all.asSequence().flatMap { b ->
                 ScheduledClass.all.asSequence().map { Slot(b, it) }
