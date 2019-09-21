@@ -26,8 +26,8 @@ data class Block(val range: ClosedRange<LocalDateTime>) {
         /* All operating blocks for the entire week, broken up in 15 minute increments */
         val all by lazy {
             generateSequence(operatingDates.start.atStartOfDay()) { dt ->
-                dt.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23, 59) }
-            }.map { Block(it..it.plusMinutes(15)) }
+                dt.plusMinutes(120).takeIf { it.plusMinutes(120) <= operatingDates.endInclusive.atTime(23, 59) }
+            }.map { Block(it..it.plusMinutes(120)) }
                 .toList()
         }
 
@@ -41,6 +41,9 @@ data class Block(val range: ClosedRange<LocalDateTime>) {
 
 data class ScheduledClass(
     val id: Int,
+    var teacher: String = "",
+    var groupYear: Int = 0,
+    var classRoom: Int = 0,
     val name: String,
     val hoursLength: Double,
     val recurrences: Int,
@@ -48,10 +51,10 @@ data class ScheduledClass(
 ) {
 
     /** the # of slots between each recurrence */
-    val gap = recurrenceGapDays * 24 * 4
+    val gap = recurrenceGapDays * 12/*24 * 4*/
 
     /** the # of slots needed for a given occurrence */
-    val slotsNeededPerSession = (hoursLength * 4).toInt()
+    val slotsNeededPerSession = /*(hoursLength * 4).toInt()*/1
 
     /** yields slots for this given scheduled class */
     val slots by lazy {
@@ -93,13 +96,13 @@ data class ScheduledClass(
             )
             .distinct()
             .onEach {
-                it.classIsSelected = 0
+                it.selected = 0
             }
             .toList()
     }
 
     /** translates and returns the optimized start time of the class */
-    val start get() = slots.asSequence().filter { it.classIsSelected == 1 }.map { it.block.range.start }.min()!!
+    val start get() = slots.asSequence().filter { it.selected == 1 }.map { it.block.range.start }.min()!!
 
     /** translates and returns the optimized end time of the class */
     val end get() = start.plusMinutes((hoursLength * 60.0).toLong())
@@ -115,8 +118,7 @@ data class ScheduledClass(
 
 data class Slot(val block: Block, val scheduledClass: ScheduledClass) {
 
-    var classIsSelected: Int? = null
-    var roomIsSelected: Int? = null
+    var selected: Int? = null
 
     companion object {
         val all by lazy {

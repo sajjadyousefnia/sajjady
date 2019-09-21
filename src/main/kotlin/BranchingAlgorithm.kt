@@ -20,7 +20,7 @@ class BranchNode(
             val affectedSlotsPropogated = Block.allInOperatingDay.asSequence().filter {
                 slot in it.affectingSlots
             }.flatMap { it.affectingSlots.asSequence() }
-                .filter { it.classIsSelected == null }
+                .filter { it.selected == null }
                 .toSet()
 
             restOfTree.asSequence()
@@ -44,7 +44,7 @@ class BranchNode(
     val isSolution get() = scheduleMet
 
     fun applySolution() {
-        slot.classIsSelected = selectedValue
+        slot.selected = selectedValue
     }
 }
 
@@ -52,10 +52,10 @@ class BranchNode(
   fun executeBranchingSearch() {
 
     // pre-constraints
-    ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.classIsSelected = 0 }
+    ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
 
     // Try to encourage most "constrained" slots to be evaluated first
-    val sortedSlots = Slot.all.asSequence().filter { it.classIsSelected == null }.sortedWith(
+    val sortedSlots = Slot.all.asSequence().filter { it.selected == null }.sortedWith(
         compareBy(
             {
                 // prioritize slots dealing with recurrences

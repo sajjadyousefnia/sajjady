@@ -10,7 +10,7 @@ val operatingDay = LocalTime.of(8, 0)..LocalTime.of(17, 0)
 
 
 val breaks = listOf<ClosedRange<LocalTime>>(
-    LocalTime.of(11, 30)..LocalTime.of(12, 59)
+    LocalTime.of(0, 0)..LocalTime.of(0, 0)
 )
 
 
