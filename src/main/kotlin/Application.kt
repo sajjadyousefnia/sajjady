@@ -9,30 +9,21 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.features.callIdMdc
 import io.ktor.gson.gson
 import io.ktor.http.ContentType
-import io.ktor.request.receive
-import io.ktor.request.receiveParameters
 import io.ktor.response.*
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.routing.Routing
 import io.ktor.routing.get
 
 
 //
 
-import io.ktor.routing.post
 import io.ktor.util.pipeline.PipelineContext
 import org.slf4j.event.Level
-import java.lang.reflect.Modifier
-import java.text.DateFormat
-import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.gson.GsonConverter
-import io.ktor.request.queryString
-import io.ktor.routing.*
-import io.ktor.util.filter
 import io.netty.handler.codec.http.HttpServerCodec
+import java.time.LocalTime
 
 // this is true
 val port = System.getenv("PORT")?.toInt() ?: 23567
@@ -85,11 +76,11 @@ object MyClass {
                         resetValues()
                         // call.response.header("sasasas", 2019)
 
-                       // call.respond(call.request.queryParameters["requested"].toString())
+                        // call.respond(call.request.queryParameters["requested"].toString())
                         //  call.respond(call.receive<GeneralList>().toString())
 
                         val myres = parseJson(call.request.queryParameters["requested"].toString())
-                       // call.respond(myres.toString())
+                        // call.respond(myres.toString())
                         numberOfClasses = myres.generalList.classesCount
 
                         startToSchedule(this, myres)
@@ -117,41 +108,51 @@ object MyClass {
         pipelineContext: PipelineContext<Unit, ApplicationCall>,
         myres: FirstClass
     ) {
-        applyPrimaryTeachersNotUsableTimes(myres)
-        var currentCourseIndex = 0
-        var pastScheuledSlots = listOf<Slot>()
-        var pastList = listOf<CourseDataClass>()
+        var pointer = 0
         val motherCourses = myres.generalList.courseGroups.flatMap { it.presentedCourses }.toMutableList()
-        pipelineContext.application.log.trace(motherCourses.toString())
+        while (pointer < motherCourses.size - 1) {
+            try {
+                for (counter in pointer until motherCourses.size) {
+                    pointer = counter
+                    scheduledClasses = ArrayList()
+                    scheduledClasses = ArrayList()
+                    val listForTest = motherCourses.subList(pointer, motherCourses.size )
+                    createScheduledClasses(listForTest)
+                    applyPrimaryTeachersNotUsableTimes(myres.generalList.teachersNames)
+                    // pipelineContext.context.respond(Slot.all.filter { it.selected == null }.toString())
+                    executeBranchingSearch()
+                }
+            } catch (e: java.lang.Exception) {
+                outputList.addAll(Slot.all.filter { it.selected == 1 })
+                continue
+            }
+            outputList.addAll(Slot.all.filter { it.selected == 1 })
+
+        }
+
+
+/*
         for (classesCounter in 0 until myres.generalList.classesCount) {
             try {
-                // pipelineContext.context.respond("sajjad")
                 for (coursesCounter in currentCourseIndex until motherCourses.size) {
-                    val listForTest = motherCourses.subList(currentCourseIndex, motherCourses.size)
+                    scheduledClasses = ArrayList()
+                    val listForTest = motherCourses.subList(currentCourseIndex, motherCourses.size - 1)
                     createScheduledClasses(listForTest)
-                    applyTeachersLimitations()
-                    applyRoomLimitations()
-                    applyGroupLimitations(listForTest)
+                    applyPrimaryTeachersNotUsableTimes(motherCourses, myres.generalList.teachersNames)
+
                     executeBranchingSearch()
-                    pastScheuledSlots = Slot.all
-                    // pipelineContext.context.respond(pastScheuledSlots)
-                    pipelineContext.context.respond(
-                        Slot.all.filter { it.selected == 1 }.toString()
-                    )
-                    extractList(pastScheuledSlots, pastList)
-                    saveTeachersLimitations(pastList)
-                    saveRoomLimitations(classesCounter, pastList)
-                    saveGroupLimitations(pastList)
                 }
                 outputList.addAll(Slot.all.filter { it.selected == 1 })
-                scheduledClasses.clear()
+                scheduledClasses = ArrayList()
                 Slot.all.forEach { it.selected = null }
             } catch (e: Exception) {
                 outputList.addAll(Slot.all.filter { it.selected == 1 })
-                scheduledClasses.clear()
+                scheduledClasses = ArrayList()
                 Slot.all.forEach { it.selected = null }
+                continue
             }
         }
+*/
 
         var outPutString = ""
         outputList.forEach {
@@ -164,7 +165,25 @@ object MyClass {
             outPutString += ("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
         }
 */
-        pipelineContext.context.respond(outPutString)
+        pipelineContext.context.respond(outputList.toString())
+    }
+
+    private fun excludeNewTimesFoTeachers() {
+        Slot.all.filter { it.selected == 1 }
+            .forEach {
+                teachersAssignedTimesList.add(
+                    TeachersTotalAssignedTimesDataClass(
+                        teacherName = it.scheduledClass.teacher,
+                        time = JustTimeDataCLass(
+                            startTime = it.block.timeRange.start.hour.toString() + ":" + it.block.timeRange.start.minute.toString(),
+                            endTime = it.block.timeRange.endInclusive.hour.toString() + ":" + it.block.timeRange.endInclusive.minute.toString(),
+                            dayName = it.block.range.start.dayOfWeek.name
+                        )
+                    )
+                )
+            }
+
+
     }
 
 
@@ -305,7 +324,54 @@ private fun startToScheduleForCurrentYear(myres: FirstClass) {
     }
 }
 
-private fun applyPrimaryTeachersNotUsableTimes(myres: FirstClass) {
+private fun applyPrimaryTeachersNotUsableTimes(
+    teachersNames: ArrayList<TeachersInfoDataClass>
+) {
+    Slot.all.forEach { it.selected = 0 }
+
+    Slot.all.filter {
+        val teacherName = it.scheduledClass.teacher
+        val dayName = it.block.range.start.dayOfWeek.name
+        val slot = it
+        val teacherDataClass = teachersNames.findLast { it.teacherName == teacherName }
+
+        teacherDataClass!!.openDays.any {
+            (it.dayName == dayName && ((
+                    LocalTime.of(
+                        slot.block.timeRange.start.hour,
+                        slot.block.timeRange.start.minute
+                    )
+                    ).isAfter(
+                LocalTime.of(
+                    it.startTime.split(":")[0].toInt(),
+                    it.startTime.split(":")[1].toInt()
+                )
+            ) || (it.startTime.split(":")[0].toInt() == slot.block.timeRange.start.hour &&
+                    it.startTime.split(":")[1].toInt() == slot.block.timeRange.start.minute)  /*  LocalTime.of(
+                it.startTime.split(":")[0].toInt(),
+                it.startTime.split(":")[1].toInt()
+            ).equals(
+                LocalTime.of(
+                    slot.block.timeRange.start.hour,
+                    slot.block.timeRange.start.hour
+                )
+            )*/) && (((
+                    LocalTime.of(
+                        slot.block.timeRange.endInclusive.hour,
+                        slot.block.timeRange.endInclusive.minute
+                    ).isBefore(
+                        LocalTime.of(
+                            it.endTime.split(":")[0].toInt(),
+                            it.endTime.split(":")[1].toInt()
+                        )
+                    ) ||
+                            it.endTime.split(":")[0].toInt() == slot.block.timeRange.endInclusive.hour &&
+                            it.endTime.split(":")[1].toInt() == slot.block.timeRange.endInclusive.minute
+                    ))))
+        }
+    }.forEach { it.selected = null }
+
+/*
     myres.generalList.courseGroups.forEach {
         it.presentedCourses.forEach {
             val teacherName = it.teacher
@@ -327,6 +393,7 @@ private fun applyPrimaryTeachersNotUsableTimes(myres: FirstClass) {
             }
         }
     }
+*/
 }
 
 private fun calculateTeachersLimitations(myres: FirstClass) {
@@ -350,7 +417,8 @@ private fun parseJson(resText: String): FirstClass {
 
 }
 
-private fun excludeTeachersTimes(courseGroups: CourseGroupsDataClass) {
+/*
+   private fun excludeTeachersTimes(courseGroups: CourseGroupsDataClass) {
     courseGroups.presentedCourses.forEach {
         val teacherName = it.teacher
         val courseName = it.courseName
@@ -371,6 +439,7 @@ private fun excludeTeachersTimes(courseGroups: CourseGroupsDataClass) {
         }
     }
 }
+*/
 
 /*
     private fun excludeEducationalGroup(entryYear: Int) {
