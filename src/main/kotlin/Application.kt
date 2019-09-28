@@ -1,28 +1,23 @@
 package com.example
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import io.ktor.application.*
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
-import io.ktor.features.callIdMdc
-import io.ktor.gson.gson
-import io.ktor.http.ContentType
-import io.ktor.response.*
-import io.ktor.routing.routing
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.ktor.routing.get
-
 
 //
 
-import io.ktor.util.pipeline.PipelineContext
-import org.slf4j.event.Level
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.gson.GsonConverter
+import io.ktor.gson.gson
+import io.ktor.http.ContentType
+import io.ktor.response.respond
+import io.ktor.routing.get
+import io.ktor.routing.routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.util.pipeline.PipelineContext
 import io.netty.handler.codec.http.HttpServerCodec
+import org.slf4j.event.Level
 import java.time.LocalTime
 
 // this is true
@@ -38,7 +33,7 @@ val groupFilledTimes = arrayListOf<GroupDataClass>()
 var numberOfClasses = 0
 var result = arrayListOf<ArrayList<ScheduledClass>>()
 var currentClass = 0
-val outputList = mutableListOf<Slot>()
+val outputList = arrayListOf<Slot>()
 val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 
 object MyClass {
@@ -73,14 +68,13 @@ object MyClass {
                 }
                 get("/{text}") {
                     try {
-                        resetValues()
                         // call.response.header("sasasas", 2019)
 
                         // call.respond(call.request.queryParameters["requested"].toString())
                         //  call.respond(call.receive<GeneralList>().toString())
 
                         val myres = parseJson(call.request.queryParameters["requested"].toString())
-                        // call.respond(myres.toString())
+                        resetValues()
                         numberOfClasses = myres.generalList.classesCount
 
                         startToSchedule(this, myres)
@@ -109,27 +103,39 @@ object MyClass {
         myres: FirstClass
     ) {
         var pointer = 0
-        val motherCourses = myres.generalList.courseGroups.flatMap { it.presentedCourses }.toMutableList()
-        while (pointer < motherCourses.size - 1) {
-            try {
-                for (counter in pointer until motherCourses.size) {
-                    pointer = counter
-                    scheduledClasses = ArrayList()
-                    scheduledClasses = ArrayList()
-                    val listForTest = motherCourses.subList(pointer, motherCourses.size )
-                    createScheduledClasses(listForTest)
+        val motherCourses = myres.generalList.courseGroups.flatMap { it.presentedCourses }
+        for (classes in 1..myres.generalList.classesCount) {
+            classesLoop@ for (counter in pointer + 2 until motherCourses.size) {
+                try {
+                    // scheduledClasses.clear()
+                    // Slot.all.forEach { it.selected = null }
+                    val listForTest = motherCourses.subList(pointer, counter)
+                    createScheduledClasses(listForTest, classes, pipelineContext)
+
                     applyPrimaryTeachersNotUsableTimes(myres.generalList.teachersNames)
-                    // pipelineContext.context.respond(Slot.all.filter { it.selected == null }.toString())
-                    executeBranchingSearch()
+                    // applyTeachersLimitations()
+                    // pipelineContext.context.application.log.trace("\n ${ScheduledClass.all} + hasan ${Slot.all.filter { it.selected == null }.size} \n")
+
+                    executeBranchingSearch(pipelineContext)
+                    // saveTeachersLimitations()
+                    // outputList.removeIf { it.scheduledClass.classRoom == classes }
+                    pipelineContext.application.log.trace(outputList.toString() + "tracing")
+                    outputList.clear()
+                    outputList.addAll(Slot.all.filter { it.selected == 1 })
+                    Slot.all.forEach { it.selected = null }
+                } catch (e: Exception) {
+                    pipelineContext.application.log.trace(e.message.toString() + "counter is $counter and pointer is $pointer and slot size is ${Slot.all.filter { it.scheduledClass.teacher != "zahmatkesh" }.size}")
+                    // pipelineContext.application.log.trace()
+                    // pipelineContext.context.respond("counter is $counter and pointer is $pointer")
+                    pointer = counter + 1
+                    // pipelineContext.context.respond(e.toString())
+                    break@classesLoop
                 }
-            } catch (e: java.lang.Exception) {
-                outputList.addAll(Slot.all.filter { it.selected == 1 })
-                continue
+                continue@classesLoop
             }
-            outputList.addAll(Slot.all.filter { it.selected == 1 })
-
+            //   pipelineContext.context.respond(motherCourses.size.toString())
+            //  outputList.addAll(Slot.all.filter { it.selected == 1 })
         }
-
 
 /*
         for (classesCounter in 0 until myres.generalList.classesCount) {
@@ -154,10 +160,6 @@ object MyClass {
         }
 */
 
-        var outPutString = ""
-        outputList.forEach {
-            outPutString += ("\n" + it.toString() + "\n")
-        }
         //   outputList.forEach { outPutString += (it.slots[0].block) };
 
 /*
@@ -165,7 +167,7 @@ object MyClass {
             outPutString += ("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
         }
 */
-        pipelineContext.context.respond(outputList.toString())
+        pipelineContext.context.respond(outputList.toString() + "sajjad")
     }
 
     private fun excludeNewTimesFoTeachers() {
@@ -198,16 +200,24 @@ object MyClass {
         }
     }
 
-    private fun saveTeachersLimitations(pastList: List<CourseDataClass>) {
-        pastList.forEach {
+    private fun saveTeachersLimitations() {
+        Slot.all.filter { it.selected == 1 }.forEach {
+            val teacher = it.scheduledClass.teacher
             teachersAssignedTimesList.add(
                 TeachersTotalAssignedTimesDataClass(
-                    it.teacher,
-                    JustTimeDataCLass(it.startTime, it.endTime, it.dayname)
+                    teacherName = teacher,
+                    time = JustTimeDataCLass
+                        (
+                        startTime = it.block.timeRange.start.hour.toString() + ":" +
+                                it.block.timeRange.start.minute.toString()
+                        , endTime = it.block.timeRange.endInclusive.hour.toString() + ":" +
+                            it.block.timeRange.endInclusive.minute.toString(),
+                        dayName = it.block.range.start.dayOfWeek.name
+                    )
+
                 )
             )
         }
-
     }
 
     private fun saveRoomLimitations(classNumber: Int, pastList: List<CourseDataClass>) {
@@ -250,6 +260,7 @@ object MyClass {
 
     }
 
+/*
     private fun applyRoomLimitations(
     ) {
         Slot.all.forEach {
@@ -273,6 +284,7 @@ object MyClass {
         }
 
     }
+*/
 
     private fun applyTeachersLimitations() {
         Slot.all.forEach {
@@ -291,8 +303,9 @@ object MyClass {
                     secondEndTimeMinute = it.time.endTime.split(":")[1]
                 )
             }.isNullOrEmpty()
-            if (!isListExisting)
+            if (!isListExisting) {
                 it.selected = 0
+            }
         }
     }
 }
@@ -316,7 +329,7 @@ private fun startToScheduleForCurrentYear(myres: FirstClass) {
     for (courseCounter in 0 until myres.generalList.courseGroups.size) {
         try {
             scheduledClasses = ArrayList()
-            executeBranchingSearch()
+            // executeBranchingSearch(pipelineContext)
             currentClass++
         } catch (e: Exception) {
             break
@@ -619,32 +632,52 @@ private fun Int.isAfter(value: Int): Boolean {
     return (this >= value)
 }
 
-private fun createScheduledClasses(
-    courseGroups: MutableList<CourseDataClass>
+private suspend fun createScheduledClasses(
+    courseGroups: List<CourseDataClass>,
+    classes: Int,
+    pipelineContext: PipelineContext<Unit, ApplicationCall>
 ) {
+/*
+    if (courseGroups.size > 1) {
+        pipelineContext.context.respond(courseGroups.toString())
+    }
+*/
+
     // ScheduledClass.all.clear()
+    //scheduledClasses = ArrayList()
+    // ScheduledClass.all.clear()
+    scheduledClasses = arrayListOf<ScheduledClass>()
     courseGroups.forEach {
         val courseValue = it
-        scheduledClasses.add(
+        ScheduledClass.all.add(
             ScheduledClass(
                 id = ++lastId,
-                name = it.courseName,
+                name = courseValue.courseName,
                 hoursLength = 1.5,
                 recurrenceGapDays = 0,
-                recurrences = it.recurrences
-                , teacher = courseValue.teacher
-
+                recurrences = courseValue.recurrences
+                , teacher = courseValue.teacher, classRoom = classes
             )
         )
+
     }
     // Slot.all.forEach { it.selected = null }
+/*
+    if (scheduledClasses.size > 1) {
+        pipelineContext.context.respond(scheduledClasses.toString())
+    }
+*/
+
 
 }
 
 
-fun executeBranchingSearch() {
+suspend fun executeBranchingSearch(pipelineContext: PipelineContext<Unit, ApplicationCall>) {
+    // pipelineContext.context.respond(scheduledClasses.toString())
     // Slot.all.filter { !isExisting(myres, it) }.forEach { it.selected = 0 }
-    ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
+    pipelineContext.context.application.log.trace("slots number is ${Slot.all.size}")
+    // ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
+    // pipelineContext.context.application.log.trace("\n ${ScheduledClass}")
     // Try to encourage most "constrained" slots to be evaluated first
     val sortedSlots = Slot.all.asSequence().filter { it.selected == null }./*sortedWith(
      *//*
