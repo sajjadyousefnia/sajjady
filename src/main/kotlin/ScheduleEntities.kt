@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 
 /** A discrete, 15-minute chunk of time a class can be scheduled on */
-data class Block(val range: ClosedRange<LocalDateTime>) {
+  data class Block(val range: ClosedRange<LocalDateTime>) {
 
     val timeRange = range.start.toLocalTime()..range.endInclusive.toLocalTime()
 

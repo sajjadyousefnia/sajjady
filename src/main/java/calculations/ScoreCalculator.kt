@@ -7,47 +7,47 @@ import org.optaplanner.core.impl.score.director.easy.EasyScoreCalculator
 class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
 
     override fun calculateScore(courseSchedule: CourseSchedule): Score<*> {
-        var hardScore = 0
-        var softScore = 0
-        for (lecture in courseSchedule.lectureList) {
+        val asssignedArray = hashSetOf<String>()
+        var hardScore = -1
+        var softScore = -1
+        for ((level, lecture) in courseSchedule.lectureList.withIndex()) {
             if (lecture != null) {
                 if (lecture.entry != null) {
-                    if (lecture.entry.second) {
-                        hardScore++
+                    if (lecture.entry.second && lecture.period.second && lecture.roomNumber.second && lecture.teacher.second) {
+                        if (asssignedArray.contains("${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.teacher}")) {
+                            println("$hardScore sajjad")
+                        } else {
+                            asssignedArray.add("${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.teacher}")
+                            hardScore += 4
+                            println("$hardScore sajjad")
+                        }
+                        /*   if (isExisting(
+                                   lecture.entry.second,
+                                   lecture.period.second,
+                                   lecture.roomNumber.second,
+                                   lecture.teacher.second, level, asssignedArray
+                               )
+                           ) {
+                                 hardScore -= 4
+                           } else {
+                               addToArray(
+                                   lecture.entry.second,
+                                   lecture.period.second,
+                                   lecture.roomNumber.second,
+                                   lecture.teacher.second, level,asssignedArray
+                               )
+                               hardScore += 4
+
+                           }*/
+                    } else {
+                        hardScore -= 4
+                        println("$hardScore sajjad")
                     }
-                }
-                if (lecture.period != null) {
-                    if (lecture.period.second)
-                        hardScore++
-                }
-                if (lecture.roomNumber != null) {
-                    if (lecture.roomNumber.second)
-                        hardScore++
-                }
-                if (lecture.teacher != null) {
-                    if (lecture.teacher.second)
-                        hardScore++
+
                 }
             }
         }
         return HardSoftScore.valueOf(hardScore, softScore)
-
-        // var hardScore = 0
-        // var softScore = 0
-        /*val occupiedRooms = HashSet<String>()
-        for (lecture in courseSchedule.lectureList) {
-            if (lecture.period != null && lecture.roomNumber != null) {
-                val roomInUse = lecture.period!!.toString() + ":" + lecture.roomNumber!!.toString()
-                if (occupiedRooms.contains(roomInUse)) {
-                    hardScore += -1
-                } else {
-                    occupiedRooms.add(roomInUse)
-                }
-            } else {
-                hardScore += -1
-            }
-        }*/
-        // return HardSoftScore.valueOf(hardScore, softScore)
-
     }
+
 }

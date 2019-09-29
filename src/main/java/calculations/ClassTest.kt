@@ -15,8 +15,17 @@ object ClassTest {
             unsolvedCourseSchedule!!.lectureList.add(Lecture())
         }
 
-        unsolvedCourseSchedule!!.entriesList.addAll(setOf(0 to true, 1 to false, 2 to true))
-        unsolvedCourseSchedule!!.teachersList.addAll(setOf(0 to true, 1 to false, 2 to true, 3 to true, 4 to false))
+        unsolvedCourseSchedule!!.entriesList.addAll(setOf(0 to false, 1 to false, 2 to true, 3 to true, 4 to true))
+        unsolvedCourseSchedule!!.teachersList.addAll(
+            setOf(
+                0 to true,
+                1 to false,
+                2 to true,
+                3 to true,
+                4 to false,
+                5 to true
+            )
+        )
         unsolvedCourseSchedule!!.roomList.addAll(
             setOf(
                 0 to true,
@@ -44,10 +53,7 @@ object ClassTest {
         val solverFactory = SolverFactory.createFromXmlResource<CourseSchedule>("courseScheduleSolverConfiguration.xml")
         val solver = solverFactory.buildSolver()
         val solvedCourseSchedule = solver.solve(unsolvedCourseSchedule)
-        solvedCourseSchedule.lectureList.forEach { println("${it.teacher} ${it.roomNumber} ${it.period} ${it.entry}") }
-        // solvedCourseSchedule.printCourseSchedule()
-        // Assert.assertNotNull(solvedCourseSchedule.getScore());
-        // Assert.assertEquals(-4, solvedCourseSchedule.getScore().getHardScore());
+        solvedCourseSchedule.lectureList.forEach { println("${it.teacher} ${it.roomNumber} ${it.period} ${it.entry}}") }
 
     }
 }
