@@ -1,8 +1,10 @@
 package calculations
 
+import com.example.MyClass.openTimes
 import org.optaplanner.core.api.score.Score
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore
 import org.optaplanner.core.impl.score.director.easy.EasyScoreCalculator
+import java.time.LocalTime
 
 class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
 
@@ -14,12 +16,17 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
             if (lecture != null) {
                 if (lecture.entry != null) {
                     if (lecture.teacher.second && lecture.entry.second && lecture.period.second && lecture.roomNumber.second && lecture.day.second) {
+
                         if (asssignedArray.contains("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}")) {
-                            println("$hardScore sajjad")
+                            hardScore -= 4
                         } else {
-                            asssignedArray.add("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}")
-                            hardScore += 4
-                            println("$hardScore sajjad")
+                        //    if (isWithinRange(lecture)) {
+                                asssignedArray.add("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}")
+                                hardScore += 4
+                                println("$hardScore sajjad")
+                          /*  } else {
+                                hardScore -= 4
+                            }*/
                         }
                     } else {
                         hardScore -= 4
@@ -30,5 +37,36 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         }
         return HardSoftScore.valueOf(hardScore, softScore)
     }
+
+    private fun isWithinRange(lecture: Lecture?): Boolean {
+        return openTimes!!.filter {
+            it.teacherName.contentEquals(lecture!!.teacher.first)
+        }.any {
+            it.openDays.any {
+                it.dayName == lecture!!.day.first
+                        &&
+                        ((lecture.period.first.start.toLocalTime().isAfter(
+                            LocalTime.of(
+                                it.startTime.split(":")[0].toInt(),
+                                it.startTime.split(":")[1].toInt()
+                            )
+                        )
+                                ||
+                                (("${lecture.period.first.start.toLocalTime().hour}:${lecture.period.first.start.toLocalTime().minute}") == (it.startTime)))
+                                &&
+                                (
+                                        lecture.period.first.endInclusive.toLocalTime().isBefore(
+                                            LocalTime.of(
+                                                it.endTime.split(":")[0].toInt(),
+                                                it.endTime.split(":")[1].toInt()
+                                            )
+                                        )
+                                                ||
+                                                ("${lecture.period.first.endInclusive.toLocalTime().hour}:${lecture.period.first.endInclusive.toLocalTime().minute}") == (it.endTime))
+                                )
+            }
+        }
+    }
+
 
 }

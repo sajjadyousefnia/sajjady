@@ -4,6 +4,7 @@ package com.example
 //
 
 import calculations.CourseSchedule
+import calculations.Lecture
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import io.ktor.application.ApplicationCall
@@ -21,6 +22,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.pipeline.PipelineContext
 import io.netty.handler.codec.http.HttpServerCodec
+import org.optaplanner.core.api.solver.SolverFactory
 import org.slf4j.event.Level
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -43,6 +45,8 @@ val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 private var unsolvedCourseSchedule: CourseSchedule? = null
 
 object MyClass {
+    var openTimes: ArrayList<TeachersInfoDataClass>? = null
+
     @JvmStatic
     fun main(args: Array<String>) {
         val es = embeddedServer(Netty, port, configure = {
@@ -96,10 +100,36 @@ object MyClass {
 
     private suspend fun startToNewSchedule(pipelineContext: PipelineContext<Unit, ApplicationCall>, myres: FirstClass) {
         val all = calculateAll()
-        pipelineContext.call.respond("a5s45a4s5a4s5a4")
-        val numberOfClasses = myres.generalList.classesCount
+        val motherCourses = myres.generalList.courseGroups.flatMap { it.presentedCourses }
         unsolvedCourseSchedule = CourseSchedule()
-        
+
+        for (i in motherCourses) {
+            unsolvedCourseSchedule!!.lectureList.add(Lecture())
+        }
+        unsolvedCourseSchedule!!.daysList.addAll(
+            setOf(
+                "saturday" to true,
+                "sunday" to true,
+                "monday" to true,
+                "tuesday" to true,
+                "wednesday" to true,
+                "thursday" to true
+            )
+        )
+        all.forEach { unsolvedCourseSchedule!!.periodList.add((it to true)) }
+        for (counter in 1..myres.generalList.classesCount) {
+            unsolvedCourseSchedule!!.roomList.add(counter.toString() to true)
+        }
+        myres.generalList.entriesYears.forEach { unsolvedCourseSchedule!!.entriesList.add(it.toString() to true) }
+        myres.generalList.teachersNames.map { it.teacherName }
+            .forEach { unsolvedCourseSchedule!!.teachersList.add(it to true) }
+        openTimes = myres.generalList.teachersNames
+        val solverFactory = SolverFactory.createFromXmlResource<CourseSchedule>("courseScheduleSolverConfiguration.xml")
+        val solver = solverFactory.buildSolver()
+        val solvedCourseSchedule = solver.solve(unsolvedCourseSchedule)
+        var valueForPrint = ""
+        solvedCourseSchedule.lectureList.forEach { valueForPrint += it.day.toString() + it.teacher.toString() + it.entry.toString() + it.period.toString() + it.roomNumber.toString() }
+        pipelineContext.call.respond(valueForPrint)
 
     }
 

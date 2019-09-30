@@ -32,8 +32,8 @@ object ClassTest {
         )
         unsolvedCourseSchedule!!.periodList.addAll(
             setOf(
-                "1 until 2.5" to true,
-                "5 until 6.5" to true
+                null to true,
+                null to true
             )
         )
         val x = (unsolvedCourseSchedule!!)

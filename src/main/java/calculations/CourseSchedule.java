@@ -1,6 +1,7 @@
 package calculations;
 
 import kotlin.Pair;
+import kotlin.ranges.ClosedRange;
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
 import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
@@ -10,6 +11,7 @@ import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +23,7 @@ public class CourseSchedule {
 
     private List<Lecture> lectureList;
     private List<Pair<String, Boolean>> roomList;
-    private List<Pair<String, Boolean>> periodList;
+    private List<Pair<ClosedRange<LocalDateTime>, Boolean>> periodList;
     private List<Pair<String, Boolean>> teachersList;
     private List<Pair<String, Boolean>> entriesList;
     private List<Pair<String, Boolean>> daysList;
@@ -62,7 +64,7 @@ public class CourseSchedule {
 
     @ValueRangeProvider(id = "availablePeriods")
     @ProblemFactCollectionProperty
-    public List<Pair<String, Boolean>> getPeriodList() {
+    public List<Pair<ClosedRange<LocalDateTime>, Boolean>> getPeriodList() {
         return periodList;
     }
 

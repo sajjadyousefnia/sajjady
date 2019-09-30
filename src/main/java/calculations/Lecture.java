@@ -1,14 +1,17 @@
 package calculations;
 
 import kotlin.Pair;
+import kotlin.ranges.ClosedRange;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
+
+import java.time.LocalDateTime;
 
 @PlanningEntity
 public class Lecture {
 
     private Pair<String, Boolean> roomNumber;
-    private Pair<String, Boolean> period;
+    private Pair<ClosedRange<LocalDateTime>, Boolean> period;
     private Pair<String, Boolean> teacher;
     private Pair<String, Boolean> entry;
     private Pair<String, Boolean> day;
@@ -34,7 +37,7 @@ public class Lecture {
     }
 
     @PlanningVariable(valueRangeProviderRefs = {"availablePeriods"})
-    public Pair<String, Boolean> getPeriod() {
+    public Pair<ClosedRange<LocalDateTime>, Boolean> getPeriod() {
         return period;
     }
 
@@ -51,7 +54,7 @@ public class Lecture {
         this.teacher = teacher;
     }
 
-    public void setPeriod(Pair<String, Boolean> period) {
+    public void setPeriod(Pair<ClosedRange<LocalDateTime>, Boolean> period) {
         this.period = period;
     }
 
