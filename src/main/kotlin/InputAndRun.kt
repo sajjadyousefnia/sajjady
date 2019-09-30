@@ -5,8 +5,8 @@ import java.time.LocalTime
 
 
 // Any Monday through Friday date range will work
-val operatingDates = LocalDate.of(2017, 10, 16)..LocalDate.of(2017, 10, 20)
-val operatingDay = LocalTime.of(8, 0)..LocalTime.of(17, 0)
+val operatingDates = LocalDate.of(2017, 10, 16)..LocalDate.of(2017, 10, 16)
+val operatingDay = LocalTime.of(8, 0)..LocalTime.of(18, 30)
 
 
 val breaks = listOf<ClosedRange<LocalTime>>(

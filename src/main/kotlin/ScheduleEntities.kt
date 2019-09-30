@@ -26,7 +26,7 @@ import java.time.LocalDateTime
         /* All operating blocks for the entire week, broken up in 15 minute increments */
         var all =
             generateSequence(operatingDates.start.atStartOfDay()) { dt ->
-                dt.plusMinutes(120).takeIf { it.plusMinutes(120) <= operatingDates.endInclusive.atTime(23, 59) }
+                dt.plusMinutes(120).takeIf { it.plusMinutes(120) <= operatingDates.endInclusive.atTime(18, 30) }
             }.map { Block(it..it.plusMinutes(120)) }
                 .toList()
 

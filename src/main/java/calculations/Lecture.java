@@ -7,44 +7,55 @@ import org.optaplanner.core.api.domain.variable.PlanningVariable;
 @PlanningEntity
 public class Lecture {
 
-    private Pair<Integer, Boolean> roomNumber;
-    private Pair<Integer, Boolean> period;
-    private Pair<Integer, Boolean> teacher;
-    private Pair<Integer, Boolean> entry;
+    private Pair<String, Boolean> roomNumber;
+    private Pair<String, Boolean> period;
+    private Pair<String, Boolean> teacher;
+    private Pair<String, Boolean> entry;
+    private Pair<String, Boolean> day;
+
+
+    @PlanningVariable(valueRangeProviderRefs = {"availableDays"})
+    public Pair<String, Boolean> getDay() {
+        return day;
+    }
+
+    public void setDay(Pair<String, Boolean> day) {
+        this.day = day;
+    }
 
     @PlanningVariable(valueRangeProviderRefs = {"availableEntries"})
-    public Pair<Integer, Boolean> getEntry() {
+    public Pair<String, Boolean> getEntry() {
         return entry;
     }
 
     @PlanningVariable(valueRangeProviderRefs = {"availableTeachers"})
-    public Pair<Integer, Boolean> getTeacher() {
+    public Pair<String, Boolean> getTeacher() {
         return teacher;
     }
 
     @PlanningVariable(valueRangeProviderRefs = {"availablePeriods"})
-    public Pair<Integer, Boolean> getPeriod() {
+    public Pair<String, Boolean> getPeriod() {
         return period;
     }
 
     @PlanningVariable(valueRangeProviderRefs = {"availableRooms"})
-    public Pair<Integer, Boolean> getRoomNumber() {
+    public Pair<String, Boolean> getRoomNumber() {
         return roomNumber;
     }
 
-    public void setEntry(Pair<Integer, Boolean> entry) {
+    public void setEntry(Pair<String, Boolean> entry) {
         this.entry = entry;
     }
 
-    public void setTeacher(Pair<Integer, Boolean> teacher) {
+    public void setTeacher(Pair<String, Boolean> teacher) {
         this.teacher = teacher;
     }
 
-    public void setPeriod(Pair<Integer, Boolean> period) {
+    public void setPeriod(Pair<String, Boolean> period) {
         this.period = period;
     }
 
-    public void setRoomNumber(Pair<Integer, Boolean> roomNumber) {
+    public void setRoomNumber(Pair<String, Boolean> roomNumber) {
         this.roomNumber = roomNumber;
     }
 }

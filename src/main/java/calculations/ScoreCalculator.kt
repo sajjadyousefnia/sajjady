@@ -13,37 +13,18 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         for ((level, lecture) in courseSchedule.lectureList.withIndex()) {
             if (lecture != null) {
                 if (lecture.entry != null) {
-                    if (lecture.entry.second && lecture.period.second && lecture.roomNumber.second && lecture.teacher.second) {
-                        if (asssignedArray.contains("${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.teacher}")) {
+                    if (lecture.teacher.second && lecture.entry.second && lecture.period.second && lecture.roomNumber.second && lecture.day.second) {
+                        if (asssignedArray.contains("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}")) {
                             println("$hardScore sajjad")
                         } else {
-                            asssignedArray.add("${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.teacher}")
+                            asssignedArray.add("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}")
                             hardScore += 4
                             println("$hardScore sajjad")
                         }
-                        /*   if (isExisting(
-                                   lecture.entry.second,
-                                   lecture.period.second,
-                                   lecture.roomNumber.second,
-                                   lecture.teacher.second, level, asssignedArray
-                               )
-                           ) {
-                                 hardScore -= 4
-                           } else {
-                               addToArray(
-                                   lecture.entry.second,
-                                   lecture.period.second,
-                                   lecture.roomNumber.second,
-                                   lecture.teacher.second, level,asssignedArray
-                               )
-                               hardScore += 4
-
-                           }*/
                     } else {
                         hardScore -= 4
                         println("$hardScore sajjad")
                     }
-
                 }
             }
         }

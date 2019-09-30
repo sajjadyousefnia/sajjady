@@ -3,9 +3,13 @@ package com.example
 
 //
 
+import calculations.CourseSchedule
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import io.ktor.application.*
+import io.ktor.application.ApplicationCall
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.application.log
 import io.ktor.features.*
 import io.ktor.gson.GsonConverter
 import io.ktor.gson.gson
@@ -18,6 +22,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.util.pipeline.PipelineContext
 import io.netty.handler.codec.http.HttpServerCodec
 import org.slf4j.event.Level
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 // this is true
@@ -35,6 +40,7 @@ var result = arrayListOf<ArrayList<ScheduledClass>>()
 var currentClass = 0
 val outputList = arrayListOf<Slot>()
 val gson: Gson = GsonBuilder().setPrettyPrinting().create()
+private var unsolvedCourseSchedule: CourseSchedule? = null
 
 object MyClass {
     @JvmStatic
@@ -76,8 +82,8 @@ object MyClass {
                         val myres = parseJson(call.request.queryParameters["requested"].toString())
                         resetValues()
                         numberOfClasses = myres.generalList.classesCount
-
-                        startToSchedule(this, myres)
+                        startToNewSchedule(this, myres)
+                        //  startToSchedule(this, myres)
 
                     } catch (e: Exception) {
                         call.respond(e.toString() + "\n" /*+ e.localizedMessage.toString() + "\n" + e.printStackTrace()*/)
@@ -86,6 +92,38 @@ object MyClass {
             }
         }
         es.start(wait = true)
+    }
+
+    private suspend fun startToNewSchedule(pipelineContext: PipelineContext<Unit, ApplicationCall>, myres: FirstClass) {
+        val all = calculateAll()
+        pipelineContext.call.respond("a5s45a4s5a4s5a4")
+        val numberOfClasses = myres.generalList.classesCount
+        unsolvedCourseSchedule = CourseSchedule()
+        
+
+    }
+
+    private fun calculateAll(): MutableList<ClosedRange<LocalDateTime>> {
+        val all = generateSequence(operatingDates.start.atStartOfDay()) { dt ->
+            dt.plusMinutes(90).takeIf { it.plusMinutes(90) <= operatingDates.endInclusive.atTime(18, 31) }
+        }.map { it..it.plusMinutes(90) }.toMutableList()
+        // all.forEach { println("${it}\n") }
+        val tempALl = mutableListOf<ClosedRange<LocalDateTime>>()
+        for (counter in 1..5) {
+            val newAll = mutableListOf<ClosedRange<LocalDateTime>>()
+
+            all.filter {
+                LocalTime.of(it.endInclusive.hour, it.endInclusive.minute).plusMinutes((15 * counter).toLong())
+                    .isBefore(LocalTime.of(18, 31))
+            }.forEach {
+                val startValue = it.start.plusMinutes((15 * counter).toLong())
+                val endValue = it.endInclusive.plusMinutes((15 * counter).toLong())
+                newAll.add(startValue..endValue)
+            }
+            tempALl.addAll(newAll)
+        }
+        all.addAll(tempALl)
+        return all
     }
 
     private fun resetValues() {
@@ -98,6 +136,7 @@ object MyClass {
         result.clear()
     }
 
+/*
     private suspend fun startToSchedule(
         pipelineContext: PipelineContext<Unit, ApplicationCall>,
         myres: FirstClass
@@ -137,6 +176,7 @@ object MyClass {
             //  outputList.addAll(Slot.all.filter { it.selected == 1 })
         }
 
+*/
 /*
         for (classesCounter in 0 until myres.generalList.classesCount) {
             try {
@@ -158,17 +198,21 @@ object MyClass {
                 continue
             }
         }
-*/
+*//*
+
 
         //   outputList.forEach { outPutString += (it.slots[0].block) };
 
+*/
 /*
         outputList.forEach {
             outPutString += ("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
         }
-*/
+*//*
+
         pipelineContext.context.respond(outputList.toString() + "sajjad")
     }
+*/
 
     private fun excludeNewTimesFoTeachers() {
         Slot.all.filter { it.selected == 1 }

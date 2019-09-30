@@ -20,41 +20,49 @@ public class CourseSchedule {
     Logger logger = LoggerFactory.getLogger("CourseSchedule");
 
     private List<Lecture> lectureList;
-    private List<Pair<Integer, Boolean>> roomList;
-    private List<Pair<Integer, Boolean>> periodList;
-    private List<Pair<Integer, Boolean>> teachersList;
-    private List<Pair<Integer, Boolean>> entriesList;
+    private List<Pair<String, Boolean>> roomList;
+    private List<Pair<String, Boolean>> periodList;
+    private List<Pair<String, Boolean>> teachersList;
+    private List<Pair<String, Boolean>> entriesList;
+    private List<Pair<String, Boolean>> daysList;
     private HardSoftScore score;
 
     @ValueRangeProvider(id = "availableEntries")
     @ProblemFactCollectionProperty
-    public List<Pair<Integer, Boolean>> getEntriesList() {
+    public List<Pair<String, Boolean>> getEntriesList() {
         return entriesList;
     }
 
     public CourseSchedule() {
-        teachersList = new ArrayList<>();
         roomList = new ArrayList<>();
+        teachersList = new ArrayList<>();
         periodList = new ArrayList<>();
         lectureList = new ArrayList<>();
         entriesList = new ArrayList<>();
+        daysList = new ArrayList<>();
+    }
+
+    @ValueRangeProvider(id = "availableDays")
+    @ProblemFactCollectionProperty
+    public List<Pair<String, Boolean>> getDaysList() {
+        return daysList;
     }
 
     @ValueRangeProvider(id = "availableTeachers")
     @ProblemFactCollectionProperty
-    public List<Pair<Integer, Boolean>> getTeachersList() {
+    public List<Pair<String, Boolean>> getTeachersList() {
         return teachersList;
     }
 
     @ValueRangeProvider(id = "availableRooms")
     @ProblemFactCollectionProperty
-    public List<Pair<Integer, Boolean>> getRoomList() {
+    public List<Pair<String, Boolean>> getRoomList() {
         return roomList;
     }
 
     @ValueRangeProvider(id = "availablePeriods")
     @ProblemFactCollectionProperty
-    public List<Pair<Integer, Boolean>> getPeriodList() {
+    public List<Pair<String, Boolean>> getPeriodList() {
         return periodList;
     }
 
