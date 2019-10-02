@@ -120,12 +120,12 @@ object MyClass {
         }
         unsolvedCourseSchedule!!.daysList.addAll(
             setOf(
-                "saturday" to true,
-                "sunday" to true,
-                "monday" to true,
-                "tuesday" to true,
-                "wednesday" to true,
-                "thursday" to true
+                "SATURDAY" to true,
+                "SUNDAY" to true,
+                "MONDAY" to true,
+                "TUESDAY" to true,
+                "WEDNESDAY" to true,
+                "THURSDAY" to true
             )
         )
         all.filterNot { it.start.hour < 8 }.forEach { unsolvedCourseSchedule!!.periodList.add((it to true)) }

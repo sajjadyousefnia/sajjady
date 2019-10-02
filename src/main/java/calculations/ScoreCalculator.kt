@@ -20,16 +20,8 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         courseSchedule.totalJson.generalList.courseGroups.forEach { it.presentedCourses.forEach { motherCourses.add(it) } }
         val openCourses = arrayListOf<Pair<String, String>>()
         motherCourses.forEach { openCourses.add(it.groupYear.toString() to it.teacher) }
-        /*= motherCourses.flatMap { courseDataClass ->
-    hashSetOf(
-        courseDataClass.groupYear.toString() to
-                courseDataClass.teacher
-    ).toHashSet()
-}.toHashSet()*/
         println("$motherCourses  reza ")
-        /*val openCourses = courseSchedule.totalJson.generalList.courseGroups.flatMap { it.presentedCourses }
-            .map { it.groupYear.toString() to it.teacher }.toHashSet()*/
-        // val openTimes = courseSchedule.totalJson.generalList.teachersNames.toHashSet()
+         val openTimes = courseSchedule.totalJson.generalList.teachersNames
         var hardScore = -1
         var softScore = -1
         for ((level, lecture) in courseSchedule.lectureList.withIndex()) {
@@ -41,7 +33,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                             ) || classesTimes.contains("${lecture.roomNumber}${lecture.period}${lecture.day}")
                             || groupsTimes.contains("${lecture.entry}${lecture.period}${lecture.day}")
                             || !openCourses.contains(lecture.entry.first to lecture.teacher.first)
-                        //  || !isWithinRange(lecture, openTimes)
+                         || !isWithinRange(lecture, openTimes)
                         ) {
                             hardScore -= 4
                         } else {
@@ -73,7 +65,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         return HardSoftScore.valueOf(hardScore, softScore)
     }
 
-    private fun isWithinRange(lecture: Lecture?, openTimes: HashSet<TeachersInfoDataClass>): Boolean {
+    private fun isWithinRange(lecture: Lecture?, openTimes: ArrayList<TeachersInfoDataClass>): Boolean {
         return openTimes!!.filter {
             it.teacherName == (lecture!!.teacher.first)
         }.any {
