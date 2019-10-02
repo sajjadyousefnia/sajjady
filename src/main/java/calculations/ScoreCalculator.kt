@@ -6,6 +6,7 @@ import org.optaplanner.core.api.score.Score
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore
 import org.optaplanner.core.impl.score.director.easy.EasyScoreCalculator
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
@@ -16,12 +17,16 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         val teachersTimes = hashSetOf<String>()
         val classesTimes = hashSetOf<String>()
         val groupsTimes = hashSetOf<String>()
+        val teacherBreaks = arrayListOf<Pair<String, LocalDateTime>>()
+        val groupBreaks = arrayListOf<Pair<String, LocalDateTime>>()
+
+
         val motherCourses = arrayListOf<CourseDataClass>()
         courseSchedule.totalJson.generalList.courseGroups.forEach { it.presentedCourses.forEach { motherCourses.add(it) } }
         val openCourses = arrayListOf<Pair<String, String>>()
         motherCourses.forEach { openCourses.add(it.groupYear.toString() to it.teacher) }
         println("$motherCourses  reza ")
-         val openTimes = courseSchedule.totalJson.generalList.teachersNames
+        val openTimes = courseSchedule.totalJson.generalList.teachersNames
         var hardScore = -1
         var softScore = -1
         for ((level, lecture) in courseSchedule.lectureList.withIndex()) {
@@ -33,7 +38,15 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                             ) || classesTimes.contains("${lecture.roomNumber}${lecture.period}${lecture.day}")
                             || groupsTimes.contains("${lecture.entry}${lecture.period}${lecture.day}")
                             || !openCourses.contains(lecture.entry.first to lecture.teacher.first)
-                         || !isWithinRange(lecture, openTimes)
+                            || !isWithinRange(lecture, openTimes)
+                            || teacherBreaks.any {
+                                it.first == "${lecture.teacher}${lecture.day}" &&
+                                        lecture.period.first.start == it.second
+                            }
+                            || groupBreaks.any {
+                                it.first == "${lecture.entry}${lecture.day}" &&
+                                        lecture.period.first.start == it.second
+                            }
                         ) {
                             hardScore -= 4
                         } else {
@@ -45,6 +58,20 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                     it.first == lecture.entry.first && it.second == lecture.teacher.first
                                 }
                             )
+                            groupBreaks.add("${lecture.entry}${lecture.day}" to lecture.period.first.endInclusive)
+                            groupBreaks.add(
+                                "${lecture.entry}${lecture.day}" to lecture.period.first.endInclusive.plusMinutes(
+                                    15
+                                )
+                            )
+                            teacherBreaks.add("${lecture.teacher}${lecture.day}" to lecture.period.first.endInclusive)
+                            teacherBreaks.add(
+                                "${lecture.entry}${lecture.teacher}" to lecture.period.first.endInclusive.plusMinutes(
+                                    15
+                                )
+                            )
+
+
                             teachersTimes.add("${lecture.teacher}${lecture.period}${lecture.day}")
                             classesTimes.add("${lecture.roomNumber}${lecture.period}${lecture.day}")
                             groupsTimes.add("${lecture.entry}${lecture.period}${lecture.day}")
