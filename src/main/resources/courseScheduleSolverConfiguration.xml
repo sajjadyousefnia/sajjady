@@ -4,7 +4,6 @@
     <scoreDirectorFactory>
         <easyScoreCalculatorClass>calculations.ScoreCalculator</easyScoreCalculatorClass>
     </scoreDirectorFactory>
-
     <termination>
         <secondsSpentLimit>10</secondsSpentLimit>
     </termination>

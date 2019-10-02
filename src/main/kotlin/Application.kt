@@ -44,8 +44,10 @@ val outputList = arrayListOf<Slot>()
 val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 private var unsolvedCourseSchedule: CourseSchedule? = null
 
+private var openTimes: ArrayList<TeachersInfoDataClass>? = null
+private var openCourses: MutableList<Pair<String, String>>? = null
+
 object MyClass {
-    var openTimes: ArrayList<TeachersInfoDataClass>? = null
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -100,9 +102,19 @@ object MyClass {
 
     private suspend fun startToNewSchedule(pipelineContext: PipelineContext<Unit, ApplicationCall>, myres: FirstClass) {
         val all = calculateAll()
-        val motherCourses = myres.generalList.courseGroups.flatMap { it.presentedCourses }
-        unsolvedCourseSchedule = CourseSchedule()
+        val motherCourses = mutableListOf<CourseDataClass>()
+        myres.generalList.courseGroups.forEach { it.presentedCourses.forEach { motherCourses.add(it) } }
 
+        openTimes = myres.generalList.teachersNames
+        openCourses = motherCourses.flatMap { courseDataClass ->
+            mutableListOf(
+                courseDataClass.groupYear.toString() to
+                        courseDataClass.teacher
+            ).toMutableList()
+        }.toMutableList()
+
+        unsolvedCourseSchedule = CourseSchedule()
+        unsolvedCourseSchedule!!.totalJson = myres
         for (i in motherCourses) {
             unsolvedCourseSchedule!!.lectureList.add(Lecture())
         }
@@ -116,21 +128,19 @@ object MyClass {
                 "thursday" to true
             )
         )
-        all.forEach { unsolvedCourseSchedule!!.periodList.add((it to true)) }
+        all.filterNot { it.start.hour < 8 }.forEach { unsolvedCourseSchedule!!.periodList.add((it to true)) }
         for (counter in 1..myres.generalList.classesCount) {
             unsolvedCourseSchedule!!.roomList.add(counter.toString() to true)
         }
         myres.generalList.entriesYears.forEach { unsolvedCourseSchedule!!.entriesList.add(it.toString() to true) }
         myres.generalList.teachersNames.map { it.teacherName }
             .forEach { unsolvedCourseSchedule!!.teachersList.add(it to true) }
-        openTimes = myres.generalList.teachersNames
         val solverFactory = SolverFactory.createFromXmlResource<CourseSchedule>("courseScheduleSolverConfiguration.xml")
         val solver = solverFactory.buildSolver()
         val solvedCourseSchedule = solver.solve(unsolvedCourseSchedule)
         var valueForPrint = ""
         solvedCourseSchedule.lectureList.forEach { valueForPrint += it.day.toString() + it.teacher.toString() + it.entry.toString() + it.period.toString() + it.roomNumber.toString() }
         pipelineContext.call.respond(valueForPrint)
-
     }
 
     private fun calculateAll(): MutableList<ClosedRange<LocalDateTime>> {

@@ -16,7 +16,6 @@ public class Lecture {
     private Pair<String, Boolean> entry;
     private Pair<String, Boolean> day;
 
-
     @PlanningVariable(valueRangeProviderRefs = {"availableDays"})
     public Pair<String, Boolean> getDay() {
         return day;

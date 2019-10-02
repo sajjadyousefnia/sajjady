@@ -1,5 +1,6 @@
 package calculations;
 
+import com.example.FirstClass;
 import kotlin.Pair;
 import kotlin.ranges.ClosedRange;
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -20,7 +21,7 @@ public class CourseSchedule {
 
 
     Logger logger = LoggerFactory.getLogger("CourseSchedule");
-
+    private FirstClass TotalJson;
     private List<Lecture> lectureList;
     private List<Pair<String, Boolean>> roomList;
     private List<Pair<ClosedRange<LocalDateTime>, Boolean>> periodList;
@@ -28,6 +29,15 @@ public class CourseSchedule {
     private List<Pair<String, Boolean>> entriesList;
     private List<Pair<String, Boolean>> daysList;
     private HardSoftScore score;
+
+    public FirstClass getTotalJson() {
+        return TotalJson;
+
+    }
+
+    public void setTotalJson(FirstClass totalJson) {
+        TotalJson = totalJson;
+    }
 
     @ValueRangeProvider(id = "availableEntries")
     @ProblemFactCollectionProperty
@@ -82,10 +92,12 @@ public class CourseSchedule {
         this.score = score;
     }
 
+/*
     public void printCourseSchedule() {
         lectureList.stream()
                 .map(c -> "Lecture in Room " + c.getRoomNumber().toString() + " during Period " + c.getPeriod().toString() + "with teacher" + c.getTeacher().toString())
                 .forEach(k -> logger.info(k));
     }
+*/
 
 }
