@@ -1,8 +1,7 @@
 package calculations
 
-import org.optaplanner.core.api.solver.SolverFactory
-
-object ClassTest {
+/*
+    object ClassTest {
 
     // private val solver: Solver<CourseSchedule>? = null
     private var unsolvedCourseSchedule: CourseSchedule? = null
@@ -47,7 +46,8 @@ object ClassTest {
         println(x)
 //        val x = (LocalTime.of(10, 16)..LocalTime.of(2017, 10, 20))
 
-        /*  val all = generateSequence(operatingDates.start.atStartOfDay()) { dt ->
+        */
+/*  val all = generateSequence(operatingDates.start.atStartOfDay()) { dt ->
               dt.plusMinutes(90).takeIf { it.plusMinutes(90) <= operatingDates.endInclusive.atTime(18, 31) }
           }.map { it..it.plusMinutes(90) }.toMutableList()
           // all.forEach { println("${it}\n") }
@@ -67,6 +67,8 @@ object ClassTest {
           }
           all.addAll(tempALl)
           // all.forEach { print("${it}\n") }
-          println(all.size)*/
+          println(all.size)*//*
+
     }
 }
+*/

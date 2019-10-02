@@ -30,7 +30,8 @@ val breaks = listOf<ClosedRange<LocalTime>>(
     )
 */
 
-fun main(args: Array<String>) {
+/*
+    fun main(args: Array<String>) {
 
     println("Job started at ${LocalTime.now()}\r\n")
 
@@ -41,6 +42,7 @@ fun main(args: Array<String>) {
 
     println("\r\nJob ended at ${LocalTime.now()}\r\n")
 }
+*/
 /*
 Job started at 22:44:41.026
 Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 08:00-10:00

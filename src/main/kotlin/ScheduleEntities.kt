@@ -153,7 +153,8 @@ fun <T> List<T>.affectedWindows(
     }
 
 
-fun main(args: Array<String>) {
+/*
+   fun main(args: Array<String>) {
     (1..20).toList()
         .affectedWindows(
             slotsNeeded = 4,
@@ -162,4 +163,4 @@ fun main(args: Array<String>) {
             mode = RecurrenceMode.PARTIAL_ONLY
         )
         .forEach { println(it) }
-}
+}*/
