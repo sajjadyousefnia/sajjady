@@ -136,6 +136,7 @@ object MyClass {
         myres.generalList.teachersNames.map { it.teacherName }
             .forEach { unsolvedCourseSchedule!!.teachersList.add(it to true) }
         val solverFactory = SolverFactory.createFromXmlResource<CourseSchedule>("courseScheduleSolverConfiguration.xml")
+
         val solver = solverFactory.buildSolver()
         val solvedCourseSchedule = solver.solve(unsolvedCourseSchedule)
         var valueForPrint = ""
