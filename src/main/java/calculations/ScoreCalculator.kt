@@ -20,7 +20,6 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         val teacherBreaks = arrayListOf<Pair<String, LocalDateTime>>()
         val groupBreaks = arrayListOf<Pair<String, LocalDateTime>>()
 
-
         val motherCourses = arrayListOf<CourseDataClass>()
         courseSchedule.totalJson.generalList.courseGroups.forEach { it.presentedCourses.forEach { motherCourses.add(it) } }
         val openCourses = arrayListOf<Pair<String, String>>()
