@@ -24,7 +24,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         courseSchedule.totalJson.generalList.courseGroups.forEach { it.presentedCourses.forEach { motherCourses.add(it) } }
         val openCourses = arrayListOf<Pair<String, String>>()
         motherCourses.forEach { openCourses.add(it.groupYear.toString() to it.teacher) }
-        println("$motherCourses  reza ")
+       // println("$motherCourses  reza ")
         val openTimes = courseSchedule.totalJson.generalList.teachersNames
         var hardScore = -1
         var softScore = -1
@@ -76,14 +76,14 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                             groupsTimes.add("${lecture.entry}${lecture.period}${lecture.day}")
                             asssignedArray.add("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}")
                             hardScore += 4
-                            println("$hardScore sajjad")
+                           // println("$hardScore sajjad")
                             /*  } else {
                                   hardScore -= 4
                               }*/
                         }
                     } else {
                         hardScore -= 4
-                        println("$hardScore sajjad")
+                       // println("$hardScore sajjad")
                     }
                 }
             }
