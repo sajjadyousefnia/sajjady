@@ -71,4 +71,55 @@ package calculations
 
     }
 }
+
+
+
+
+*/
+object ClassTest {
+    @JvmStatic
+    fun main(args: Array<String>) {
+
+        val numbers = 1..10
+        val myList = numbers.sorted()
+        var totalValue = 0
+         val max = myList.max()!!
+        for (counter in myList) {
+            totalValue += (findFactorial(max) / (findFactorial(max - counter) * findFactorial(counter))).toInt()
+        }
+        println(totalValue.toString())
+
+    }
+
+    fun findFactorial(num: Int): Long {
+        if (num < 1) {
+            println("Please provide non-negative number.")
+        }
+        var factorial: Long = 1
+        for (i in num downTo 2) {
+            factorial = factorial * i
+        }
+        return factorial
+    }
+}
+/*
+    fun main(args: Array<String>) {
+    val numbers = 1..3
+    val myList = numbers.sorted()
+    val max = myList.max()
+    for (counter in myList) {
+        findFactorial(5)
+    }
+    fun findFactorial(num: Int): Long {
+        if (num < 1) {
+            println("Please provide non-negative number.")
+        }
+        var factorial: Long = 1
+        for (i in num downTo 2) {
+            factorial = factorial * i
+        }
+        return factorial
+    }
+
+}
 */

@@ -10,6 +10,9 @@ data class FirstClass(
 )
 
 data class GeneralList(
+    @SerializedName("workingTime")
+    @Expose
+    val workingTime: workingTimeDataClass,
     @SerializedName("entriesYears")
     @Expose
     val entriesYears: ArrayList<Int>,
@@ -22,11 +25,35 @@ data class GeneralList(
     @SerializedName("educationGroupName")
     @Expose
     val educationGroupName: String,
-    @SerializedName("classesCount")
+    /*@SerializedName("classesCount")
     @Expose
-    val classesCount: Int
+    val classesCount: Int*/
+    @SerializedName("classes")
+    @Expose
+    val classes: ArrayList<Classes>
 
 
+)
+
+data class Classes(
+    @SerializedName("classVolume")
+    @Expose
+    val classVolume: String,
+    @SerializedName("classNumber")
+    @Expose
+    val classes: String,
+    @SerializedName("classType")
+    @Expose
+    val classType: String
+)
+
+data class workingTimeDataClass(
+    @SerializedName("startTime")
+    @Expose
+    val startTime: String,
+    @SerializedName("endTime")
+    @Expose
+    val endTime: String
 )
 
 data class CourseGroupsDataClass(
@@ -54,18 +81,21 @@ data class CourseDataClass(
     @SerializedName("recurrences")
     @Expose
     val recurrences: Int,
-    @SerializedName("dayName")
+    @SerializedName("courseType")
     @Expose
-    var dayname: String = "",
-    @SerializedName("startTime")
+    val courseType: String,
+    /*@SerializedName("dayName")
     @Expose
-    var startTime: String = "",
-    @SerializedName("endTime")
+    var dayname: String = ""*/
+/*    @SerializedName("startTime")
     @Expose
-    var endTime: String = "",
+    var startTime: String = ""*/
+/*    @SerializedName("endTime")
+    @Expose
+    var endTime: String = ""*/
     @SerializedName("groupYear")
     @Expose
-    var groupYear: Int
+    var groupYear: ArrayList<Int>
 )
 
 data class TeachersInfoDataClass(

@@ -1,19 +1,21 @@
 package calculations;
 
+import com.example.Classes;
 import kotlin.Pair;
 import kotlin.ranges.ClosedRange;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @PlanningEntity
 public class Lecture {
 
-    private Pair<String, Boolean> roomNumber;
+    private Pair<Classes, Boolean> roomNumber;
     private Pair<ClosedRange<LocalDateTime>, Boolean> period;
     private Pair<String, Boolean> teacher;
-    private Pair<String, Boolean> entry;
+    private Pair<ArrayList<Integer>, Boolean> entry;
     private Pair<String, Boolean> day;
 
     @PlanningVariable(valueRangeProviderRefs = {"availableDays"})
@@ -26,7 +28,7 @@ public class Lecture {
     }
 
     @PlanningVariable(valueRangeProviderRefs = {"availableEntries"})
-    public Pair<String, Boolean> getEntry() {
+    public Pair<ArrayList<Integer>, Boolean> getEntry() {
         return entry;
     }
 
@@ -41,11 +43,11 @@ public class Lecture {
     }
 
     @PlanningVariable(valueRangeProviderRefs = {"availableRooms"})
-    public Pair<String, Boolean> getRoomNumber() {
+    public Pair<Classes, Boolean> getRoomNumber() {
         return roomNumber;
     }
 
-    public void setEntry(Pair<String, Boolean> entry) {
+    public void setEntry(Pair<ArrayList<Integer>, Boolean> entry) {
         this.entry = entry;
     }
 
@@ -57,7 +59,7 @@ public class Lecture {
         this.period = period;
     }
 
-    public void setRoomNumber(Pair<String, Boolean> roomNumber) {
+    public void setRoomNumber(Pair<Classes, Boolean> roomNumber) {
         this.roomNumber = roomNumber;
     }
 }

@@ -1,7 +1,7 @@
 <solver>
     <scanAnnotatedClasses/>
-   <!-- <solutionClass>calculations.CourseSchedule</solutionClass>
-    <entityClass>calculations.Lecture</entityClass>-->
+    <!-- <solutionClass>calculations.CourseSchedule</solutionClass>
+     <entityClass>calculations.Lecture</entityClass>-->
     <scoreDirectorFactory>
         <easyScoreCalculatorClass>calculations.ScoreCalculator</easyScoreCalculatorClass>
     </scoreDirectorFactory>

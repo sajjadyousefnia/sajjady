@@ -87,7 +87,6 @@ object MyClass {
 
                         val myres = parseJson(call.request.queryParameters["requested"].toString())
                         resetValues()
-                        numberOfClasses = myres.generalList.classesCount
                         startToNewSchedule(this, myres)
                         //  startToSchedule(this, myres)
 
@@ -128,11 +127,19 @@ object MyClass {
                 "THURSDAY" to true
             )
         )
-        all.filterNot { it.start.hour < 8 }.forEach { unsolvedCourseSchedule!!.periodList.add((it to true)) }
-        for (counter in 1..myres.generalList.classesCount) {
-            unsolvedCourseSchedule!!.roomList.add(counter.toString() to true)
+        all.filterNot { it.start.toLocalTime().isBefore(LocalTime.of(8, 0)) }
+            .forEach { unsolvedCourseSchedule!!.periodList.add((it to true)) }
+
+        for (counter in 0 until myres.generalList.classes.size) {
+            unsolvedCourseSchedule!!.roomList.add(myres.generalList.classes[counter] to true)
         }
-        myres.generalList.entriesYears.forEach { unsolvedCourseSchedule!!.entriesList.add(it.toString() to true) }
+        // myres.generalList.entriesYears.forEach { unsolvedCourseSchedule!!.entriesList.add(it.toString() to true) }
+
+        motherCourses.distinctBy { it.groupYear }.map { it.groupYear }
+            .forEach { unsolvedCourseSchedule!!.entriesList.add(it to true) }
+
+
+
         myres.generalList.teachersNames.map { it.teacherName }
             .forEach { unsolvedCourseSchedule!!.teachersList.add(it to true) }
         val solverFactory = SolverFactory.createFromXmlResource<CourseSchedule>("courseScheduleSolverConfiguration.xml")
@@ -146,7 +153,7 @@ object MyClass {
 
     private fun calculateAll(): MutableList<ClosedRange<LocalDateTime>> {
         val all = generateSequence(operatingDates.start.atStartOfDay()) { dt ->
-            dt.plusMinutes(90).takeIf { it.plusMinutes(90) <= operatingDates.endInclusive.atTime(18, 31) }
+            dt.plusMinutes(90).takeIf { it.plusMinutes(90) <= operatingDates.endInclusive.atTime(18, 30) }
         }.map { it..it.plusMinutes(90) }.toMutableList()
         // all.forEach { println("${it}\n") }
         val tempALl = mutableListOf<ClosedRange<LocalDateTime>>()
@@ -155,7 +162,7 @@ object MyClass {
 
             all.filter {
                 LocalTime.of(it.endInclusive.hour, it.endInclusive.minute).plusMinutes((15 * counter).toLong())
-                    .isBefore(LocalTime.of(18, 31))
+                    .isBefore(LocalTime.of(18, 30))
             }.forEach {
                 val startValue = it.start.plusMinutes((15 * counter).toLong())
                 val endValue = it.endInclusive.plusMinutes((15 * counter).toLong())
@@ -274,6 +281,7 @@ object MyClass {
     }
 
 
+/*
     private fun saveGroupLimitations(pastList: List<CourseDataClass>) {
         pastList.forEach {
             groupFilledTimes.add(
@@ -284,6 +292,7 @@ object MyClass {
             )
         }
     }
+*/
 
     private fun saveTeachersLimitations() {
         Slot.all.filter { it.selected == 1 }.forEach {
@@ -305,6 +314,7 @@ object MyClass {
         }
     }
 
+/*
     private fun saveRoomLimitations(classNumber: Int, pastList: List<CourseDataClass>) {
         pastList.forEach {
             roomsFilledTimes.add(
@@ -320,6 +330,7 @@ object MyClass {
 
 
     }
+*/
 
     private fun applyGroupLimitations(listForTest: MutableList<CourseDataClass>) {
         Slot.all.forEach {
@@ -395,7 +406,8 @@ object MyClass {
     }
 }
 
-private fun extractList(
+/*
+    private fun extractList(
     pastScheuledSlots: List<Slot>,
     pastList: List<CourseDataClass>
 ) {
@@ -408,6 +420,7 @@ private fun extractList(
         }
     }
 }
+*/
 
 
 private fun startToScheduleForCurrentYear(myres: FirstClass) {

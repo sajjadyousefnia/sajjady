@@ -22,9 +22,9 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
 
         val motherCourses = arrayListOf<CourseDataClass>()
         courseSchedule.totalJson.generalList.courseGroups.forEach { it.presentedCourses.forEach { motherCourses.add(it) } }
-        val openCourses = arrayListOf<Pair<String, String>>()
-        motherCourses.forEach { openCourses.add(it.groupYear.toString() to it.teacher) }
-       // println("$motherCourses  reza ")
+        val openCourses = arrayListOf<Pair<ArrayList<Int>, String>>()
+        motherCourses.forEach { openCourses.add(it.groupYear to it.teacher) }
+        // println("$motherCourses  reza ")
         val openTimes = courseSchedule.totalJson.generalList.teachersNames
         var hardScore = -1
         var softScore = -1
@@ -35,7 +35,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                         if (asssignedArray.contains("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}") || teachersTimes.contains(
                                 "${lecture.teacher}${lecture.period}${lecture.day}"
                             ) || classesTimes.contains("${lecture.roomNumber}${lecture.period}${lecture.day}")
-                            || groupsTimes.contains("${lecture.entry}${lecture.period}${lecture.day}")
+                            || lecture.entry.first.any { it.toString() == "${it}${lecture.period}${lecture.day}" }
                             || !openCourses.contains(lecture.entry.first to lecture.teacher.first)
                             || !isWithinRange(lecture, openTimes)
                             || teacherBreaks.any {
@@ -49,15 +49,13 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                         ) {
                             hardScore -= 4
                         } else {
-                            // println("${lecture.entry}${lecture.teacher}${lecture.day}${lecture.period}${lecture.roomNumber} reza ${hardScore + 4}")
-                            // println("$openCourses  reza  ")
-                            //    if (isWithinRange(lecture)) {
                             openCourses.remove(
                                 openCourses.first {
                                     it.first == lecture.entry.first && it.second == lecture.teacher.first
                                 }
                             )
                             groupBreaks.add("${lecture.entry}${lecture.day}" to lecture.period.first.endInclusive)
+
                             groupBreaks.add(
                                 "${lecture.entry}${lecture.day}" to lecture.period.first.endInclusive.plusMinutes(
                                     15
@@ -73,17 +71,29 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
 
                             teachersTimes.add("${lecture.teacher}${lecture.period}${lecture.day}")
                             classesTimes.add("${lecture.roomNumber}${lecture.period}${lecture.day}")
-                            groupsTimes.add("${lecture.entry}${lecture.period}${lecture.day}")
+
+                            lecture.entry.first.forEach {
+
+                                groupsTimes.add("${/*lecture.entry*/it}${lecture.period}${lecture.day}")
+
+
+                            }
+
                             asssignedArray.add("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}")
                             hardScore += 4
-                           // println("$hardScore sajjad")
+                            if (lecture.period.first.start.minute == 0) {
+                                softScore += 10
+                            } else if (lecture.period.first.start.minute == 30) {
+                                softScore += 5
+                            }
+                            // println("$hardScore sajjad")
                             /*  } else {
                                   hardScore -= 4
                               }*/
                         }
                     } else {
                         hardScore -= 4
-                       // println("$hardScore sajjad")
+                        // println("$hardScore sajjad")
                     }
                 }
             }
@@ -92,7 +102,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
     }
 
     private fun isWithinRange(lecture: Lecture?, openTimes: ArrayList<TeachersInfoDataClass>): Boolean {
-        return openTimes!!.filter {
+        return openTimes.filter {
             it.teacherName == (lecture!!.teacher.first)
         }.any {
             it.openDays.any {
@@ -102,21 +112,21 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                             LocalTime.of(
                                 it.startTime.split(":")[0].toInt(),
                                 it.startTime.split(":")[1].toInt()
-                            )
+                            ).minusMinutes(1)
                         )
-                                ||
-                                (("${lecture.period.first.start.toLocalTime().hour}:${lecture.period.first.start.toLocalTime().minute}") == (it.startTime)))
+                                /* ||
+                                 (("${lecture.period.first.start.toLocalTime().hour}:${lecture.period.first.start.toLocalTime().minute}") == (it.startTime))*/)
                                 &&
                                 (
                                         lecture.period.first.endInclusive.toLocalTime().isBefore(
                                             LocalTime.of(
                                                 it.endTime.split(":")[0].toInt(),
                                                 it.endTime.split(":")[1].toInt()
-                                            )
+                                            ).plusMinutes(1)
                                         )
-                                                ||
-                                                ("${lecture.period.first.endInclusive.toLocalTime().hour}:${lecture.period.first.endInclusive.toLocalTime().minute}") == (it.endTime))
-                                )
+                                        /*       ||
+                                               ("${lecture.period.first.endInclusive.toLocalTime().hour}:${lecture.period.first.endInclusive.toLocalTime().minute}") == (it.endTime))*/
+                                        ))
             }
         }
     }
