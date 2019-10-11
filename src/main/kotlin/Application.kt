@@ -5,6 +5,8 @@ package com.example
 
 import calculations.CourseSchedule
 import calculations.Lecture
+import com.github.salomonbrys.kotson.jsonArray
+import com.github.salomonbrys.kotson.jsonObject
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import io.ktor.application.ApplicationCall
@@ -148,7 +150,22 @@ object MyClass {
         val solvedCourseSchedule = solver.solve(unsolvedCourseSchedule)
         var valueForPrint = ""
         solvedCourseSchedule.lectureList.forEach { valueForPrint += it.day.toString() + it.teacher.toString() + it.entry.toString() + it.period.toString() + it.roomNumber.toString() }
-        pipelineContext.call.respond(valueForPrint)
+
+        val listForExport = solvedCourseSchedule.lectureList.flatMap {
+            mutableListOf(
+                jsonObject(
+                    "day" to it.day.first,
+                    "teacher" to it.teacher.first,
+                    "entry" to jsonArray(it.entry.first),
+                    "room" to it.roomNumber.first.classes,
+                    "start" to it.period.first.start.toLocalTime().toString(),
+                    "end" to it.period.first.endInclusive.toLocalTime().toString()
+                )
+            )
+        }
+
+        // pipelineContext.call.respond(valueForPrint)
+        pipelineContext.call.respond(Gson().toJson(listForExport))
     }
 
     private fun calculateAll(): MutableList<ClosedRange<LocalDateTime>> {
@@ -183,6 +200,7 @@ object MyClass {
         lastId = 0
         result.clear()
     }
+
 
 /*
     private suspend fun startToSchedule(

@@ -47,6 +47,7 @@ dependencies {
     // compile "io.ktor:ktor-client-logging:1.2.2"
     compile 'ch.qos.logback:logback-classic:1.2.3'
     compile 'org.optaplanner:optaplanner-core:7.9.0.Final'
+    compile 'com.github.salomonbrys.kotson:kotson:2.5.0'
 }
 
 

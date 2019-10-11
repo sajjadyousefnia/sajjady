@@ -81,6 +81,9 @@ data class CourseDataClass(
     @SerializedName("recurrences")
     @Expose
     val recurrences: Int,
+    @SerializedName("id")
+    @Expose
+    val id: Int,
     @SerializedName("courseType")
     @Expose
     val courseType: String,

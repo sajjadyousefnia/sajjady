@@ -86,6 +86,23 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                             } else if (lecture.period.first.start.minute == 30) {
                                 softScore += 5
                             }
+                            val nextTime =
+                                lecture.period.first.start.plusMinutes(120)..lecture.period.first.endInclusive.plusMinutes(
+                                    120
+                                )
+                            val beforeTime =
+                                lecture.period.first.start.minusMinutes(120)..lecture.period.first.endInclusive.minusMinutes(
+                                    120
+                                )
+                            if (asssignedArray.contains("${lecture.teacher}${lecture.entry}${nextTime to true}${lecture.roomNumber}${lecture.day}")) {
+                                softScore += 100
+                            }
+
+                            if (asssignedArray.contains("${lecture.teacher}${lecture.entry}${beforeTime to true}${lecture.roomNumber}${lecture.day}")) {
+                                softScore += 100
+                            }
+
+
                             // println("$hardScore sajjad")
                             /*  } else {
                                   hardScore -= 4
