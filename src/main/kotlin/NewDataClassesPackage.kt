@@ -25,9 +25,6 @@ data class GeneralList(
     @SerializedName("educationGroupName")
     @Expose
     val educationGroupName: String,
-    /*@SerializedName("classesCount")
-    @Expose
-    val classesCount: Int*/
     @SerializedName("classes")
     @Expose
     val classes: ArrayList<Classes>
@@ -36,15 +33,9 @@ data class GeneralList(
 )
 
 data class Classes(
-    @SerializedName("classVolume")
-    @Expose
-    val classVolume: String,
     @SerializedName("classNumber")
     @Expose
-    val classes: String,
-    @SerializedName("classType")
-    @Expose
-    val classType: String
+    val classes: String
 )
 
 data class workingTimeDataClass(
@@ -87,15 +78,6 @@ data class CourseDataClass(
     @SerializedName("courseType")
     @Expose
     val courseType: String,
-    /*@SerializedName("dayName")
-    @Expose
-    var dayname: String = ""*/
-/*    @SerializedName("startTime")
-    @Expose
-    var startTime: String = ""*/
-/*    @SerializedName("endTime")
-    @Expose
-    var endTime: String = ""*/
     @SerializedName("groupYear")
     @Expose
     var groupYear: ArrayList<Int>
