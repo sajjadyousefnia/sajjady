@@ -16,7 +16,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         val asssignedArray = hashSetOf<String>()
         val teachersTimes = hashSetOf<String>()
         val classesTimes = hashSetOf<String>()
-        val groupsTimes = hashSetOf<String>()
+        // val groupsTimes = hashSetOf<String>()
         val teacherBreaks = arrayListOf<Pair<String, LocalDateTime>>()
         val groupBreaks = arrayListOf<Pair<String, LocalDateTime>>()
 
@@ -74,7 +74,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
 
                             lecture.entry.first.forEach {
 
-                                groupsTimes.add("${/*lecture.entry*/it}${lecture.period}${lecture.day}")
+                                //   groupsTimes.add("${/*lecture.entry*/it}${lecture.period}${lecture.day}")
 
 
                             }

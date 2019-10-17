@@ -1,6 +1,5 @@
 package calculations;
 
-import com.example.Classes;
 import com.example.FirstClass;
 import kotlin.Pair;
 import kotlin.ranges.ClosedRange;
@@ -24,7 +23,7 @@ public class CourseSchedule {
     Logger logger = LoggerFactory.getLogger("CourseSchedule");
     private FirstClass TotalJson;
     private List<Lecture> lectureList;
-    private List<Pair<Classes, Boolean>> roomList;
+    private List<Pair<String, Boolean>> roomList;
     private List<Pair<ClosedRange<LocalDateTime>, Boolean>> periodList;
     private List<Pair<String, Boolean>> teachersList;
     private List<Pair<ArrayList<Integer>, Boolean>> entriesList;
@@ -69,7 +68,7 @@ public class CourseSchedule {
 
     @ValueRangeProvider(id = "availableRooms")
     @ProblemFactCollectionProperty
-    public List<Pair<Classes, Boolean>> getRoomList() {
+    public List<Pair<String, Boolean>> getRoomList() {
         return roomList;
     }
 

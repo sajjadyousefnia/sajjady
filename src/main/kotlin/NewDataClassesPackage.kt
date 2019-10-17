@@ -27,16 +27,16 @@ data class GeneralList(
     val educationGroupName: String,
     @SerializedName("classes")
     @Expose
-    val classes: ArrayList<Classes>
+    val classes: ArrayList<String>
 
 
 )
 
-data class Classes(
+/*data class Classes(
     @SerializedName("classNumber")
     @Expose
     val classes: String
-)
+)*/
 
 data class workingTimeDataClass(
     @SerializedName("startTime")

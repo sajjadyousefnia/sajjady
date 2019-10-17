@@ -1,6 +1,5 @@
 package calculations;
 
-import com.example.Classes;
 import kotlin.Pair;
 import kotlin.ranges.ClosedRange;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
@@ -12,7 +11,7 @@ import java.util.ArrayList;
 @PlanningEntity
 public class Lecture {
 
-    private Pair<Classes, Boolean> roomNumber;
+    private Pair<String, Boolean> roomNumber;
     private Pair<ClosedRange<LocalDateTime>, Boolean> period;
     private Pair<String, Boolean> teacher;
     private Pair<ArrayList<Integer>, Boolean> entry;
@@ -43,7 +42,7 @@ public class Lecture {
     }
 
     @PlanningVariable(valueRangeProviderRefs = {"availableRooms"})
-    public Pair<Classes, Boolean> getRoomNumber() {
+    public Pair<String, Boolean> getRoomNumber() {
         return roomNumber;
     }
 
@@ -59,7 +58,7 @@ public class Lecture {
         this.period = period;
     }
 
-    public void setRoomNumber(Pair<Classes, Boolean> roomNumber) {
+    public void setRoomNumber(Pair<String, Boolean> roomNumber) {
         this.roomNumber = roomNumber;
     }
 }

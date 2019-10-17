@@ -1,12 +1,15 @@
 <solver>
-    <scanAnnotatedClasses/>
+    <solutionClass>calculations.CourseSchedule</solutionClass>
+    <entityClass>calculations.Lecture</entityClass>
     <!-- <solutionClass>calculations.CourseSchedule</solutionClass>
      <entityClass>calculations.Lecture</entityClass>-->
     <scoreDirectorFactory>
-        <easyScoreCalculatorClass>calculations.ScoreCalculator</easyScoreCalculatorClass>
+        <incrementalScoreCalculatorClass>calculations.IncrementalScoreCalculator</incrementalScoreCalculatorClass>
     </scoreDirectorFactory>
-
     <termination>
-        <secondsSpentLimit>10</secondsSpentLimit>
+        <secondsSpentLimit>20</secondsSpentLimit>
     </termination>
+   <!-- <termination>
+        <bestScoreLimit>600hard/0soft</bestScoreLimit>
+    </termination>-->
 </solver>
