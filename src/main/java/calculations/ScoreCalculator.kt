@@ -19,11 +19,31 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         // val groupsTimes = hashSetOf<String>()
         val teacherBreaks = arrayListOf<Pair<String, LocalDateTime>>()
         val groupBreaks = arrayListOf<Pair<String, LocalDateTime>>()
+        val openCourses = arrayListOf<Pair<ArrayList<Int>, String>>()
 
         val motherCourses = arrayListOf<CourseDataClass>()
-        courseSchedule.totalJson.generalList.courseGroups.forEach { it.presentedCourses.forEach { motherCourses.add(it) } }
-        val openCourses = arrayListOf<Pair<ArrayList<Int>, String>>()
-        motherCourses.forEach { openCourses.add(it.groupYear to it.teacher) }
+        courseSchedule.totalJson.generalList.courseGroups.forEach {
+            it.presentedCourses.forEach {
+                for (counter in 0 until it.recurrences) {
+                    val courseClass = CourseDataClass(
+                        teacher = it.teacher,
+                        courseName = it.courseName.toString() + "###" + counter.toString(),
+                        recurrences = 1,
+                        id = it.id, courseType = "theory",
+                        groupYear = it.groupYear, units = it.units
+                    )
+                    openCourses.add(courseClass.groupYear to courseClass.teacher)
+                }
+            }
+        }
+        /* motherCourses.forEach {
+             val recuurence = it.recurrences
+             openCourses.add(it.groupYear to it.teacher)
+         }*/
+        /*motherCourses.forEach {
+            openCourses.add(it.groupYear to it.teacher)
+        }*/
+
         // println("$motherCourses  reza ")
         val openTimes = courseSchedule.totalJson.generalList.teachersNames
         var hardScore = -1

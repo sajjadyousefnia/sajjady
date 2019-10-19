@@ -103,15 +103,22 @@ object MyClass {
     private suspend fun startToNewSchedule(pipelineContext: PipelineContext<Unit, ApplicationCall>, myres: FirstClass) {
         val all = calculateAll()
         val motherCourses = mutableListOf<CourseDataClass>()
-        myres.generalList.courseGroups.forEach { it.presentedCourses.forEach { motherCourses.add(it) } }
+        myres.generalList.courseGroups.forEach {
+            it.presentedCourses.forEach {
+                for (counter in 0 until it.recurrences)
+                    motherCourses.add(it)
+            }
+        }
 
-        openTimes = myres.generalList.teachersNames
+        // openTimes = myres.generalList.teachersNames
+/*
         openCourses = motherCourses.flatMap { courseDataClass ->
             mutableListOf(
                 courseDataClass.groupYear.toString() to
                         courseDataClass.teacher
             ).toMutableList()
         }.toMutableList()
+*/
         unsolvedCourseSchedule = CourseSchedule()
         unsolvedCourseSchedule!!.totalJson = myres
         for (i in motherCourses) {
