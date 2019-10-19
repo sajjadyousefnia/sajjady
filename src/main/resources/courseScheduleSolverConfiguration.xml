@@ -7,7 +7,7 @@
         <incrementalScoreCalculatorClass>calculations.IncrementalScoreCalculator</incrementalScoreCalculatorClass>
     </scoreDirectorFactory>
     <termination>
-        <secondsSpentLimit>20</secondsSpentLimit>
+        <secondsSpentLimit>10</secondsSpentLimit>
     </termination>
    <!-- <termination>
         <bestScoreLimit>600hard/0soft</bestScoreLimit>
