@@ -9,6 +9,7 @@ import com.github.salomonbrys.kotson.jsonArray
 import com.github.salomonbrys.kotson.jsonObject
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
@@ -52,7 +53,7 @@ object MyClass {
             httpServerCodec = { HttpServerCodec(409600, 819200, 819200) }
         }) {
             routing {
-                // install(CallLogging)
+                // install(CalltheoLogging)
                 install(CallLogging) {
                     level = Level.TRACE
                     callIdMdc("X-Request-ID")
@@ -169,8 +170,21 @@ object MyClass {
             )
         }
 
-        // pipelineContext.call.respond(valueForPrint)
-        pipelineContext.call.respond(Gson().toJson(listForExport))
+
+        val daysOfWeek = listOf("SATURDAY", "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY")
+        val lengthComparator = Comparator { o1: JsonObject, o2: JsonObject ->
+            val result = daysOfWeek.indexOf(o1.get("day").asString) - daysOfWeek.indexOf(o2.get("day").asString)
+            if (result != 0) {
+                return@Comparator result
+            } else {
+                -(o1.get("start").asString.replace(":", "").toInt()
+                        -
+                        o1.get("start").asString.replace(":", "").toInt())
+
+            }
+        }
+        // listForExport.toSortedSet(lengthComparator)
+        pipelineContext.call.respond(Gson().toJson(listForExport.sortedWith(lengthComparator)))
     }
 
     private fun calculateAll(): MutableList<ClosedRange<LocalDateTime>> {
