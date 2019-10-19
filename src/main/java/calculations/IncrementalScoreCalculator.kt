@@ -12,100 +12,206 @@ import java.time.LocalTime
 class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSchedule>() {
     var hardScore = 0
     var softScore = 0
-    var hardScoreChange = 0
-    var softScoreChange = 0
     lateinit var TotalJson: FirstClass
-    val occupiedTeacherBreaks = hashSetOf<Pair<String, Pair<String, ClosedRange<LocalDateTime>>>>()
-    val occupiedGroupBreaks = hashSetOf<Pair<MutableList<String>, Pair<String, ClosedRange<LocalDateTime>>>>()
-    val occupiedTeacherEntryBreaks = hashSetOf<Pair<String, MutableList<String>>>()
-    val occupiedRoomBreaks = hashSetOf<Pair<String, Pair<String, ClosedRange<LocalDateTime>>>>()
+    val occupiedTeacherBreaks = hashSetOf<String>()
+    val occupiedGroupBreaks = hashSetOf<String>()
+    val occupiedTeacherEntryBreaks = arrayListOf<String>()
+    val occupiedRoomBreaks = hashSetOf<String>()
     val initializedCourses = hashSetOf<String>()
     val motherCourses = arrayListOf<CourseDataClass>()
-
+    var isFirstTime = false
     override fun resetWorkingSolution(courseSchedule: CourseSchedule) {
+        softScore = 0
+        hardScore = 0
         TotalJson = courseSchedule.totalJson
-        occupiedTeacherBreaks.clear()
+        /*occupiedTeacherBreaks.clear()
         occupiedGroupBreaks.clear()
         motherCourses.clear()
+        occupiedRoomBreaks.clear()
+        occupiedTeacherEntryBreaks.clear()
+        initializedCourses.clear()*/
+        if (!isFirstTime) {
+            if (!courseSchedule.lectureList.isNullOrEmpty()) {
+                courseSchedule.totalJson.generalList.courseGroups.forEach {
+                    it.presentedCourses.forEach {
+                        motherCourses.add(it)
+                    }
+                }
 
-        if (!courseSchedule.lectureList.isNullOrEmpty()) {
+                val all = generateSequence(operatingDates.start.atStartOfDay()) { dt ->
+                    dt.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23, 59) }
+                }.map { it..it.plusMinutes(15) }.toMutableList()
+                all.removeAll {
+                    it.start.toLocalTime().isBefore(
+                        LocalTime.of(
+                            TotalJson.generalList.workingTime.startTime.split(":")[0].toInt(),
+                            TotalJson.generalList.workingTime.startTime.split(":")[1].toInt()
+                        )
+                    ) ||
+                            it.endInclusive.toLocalTime().isAfter(
+                                LocalTime.of(
+                                    TotalJson.generalList.workingTime.endTime.split(":")[0].toInt(),
+                                    TotalJson.generalList.workingTime.endTime.split(":")[1].toInt()
+                                )
+                            )
+                }
+                val allTimes = all.flatMap {
+                    mutableListOf(
+                        "SATURDAY" to it,
+                        "SUNDAY" to it,
+                        "MONDAY" to it,
+                        "TUESDAY" to it,
+                        "WEDNESDAY" to it,
+                        "THURSDAY" to it
+                    )
+                }
+                TotalJson.generalList.teachersNames.forEach {
+                    val teacherName = it.teacherName
+                    it.openDays.forEach {
+                        val day = it.dayName
+                        val startTime = it.startTime
+                        val endTime = it.endTime
+
+                        val teacherLockedTime = allTimes.filterNot {
+                            it.first == day && (it.second.start.toLocalTime().isAfter(
+                                LocalTime.of(
+                                    startTime.split(":")[0].toInt(),
+                                    startTime.split(":")[1].toInt()
+                                ).minusMinutes(1)
+                            ) && (it.second.endInclusive.toLocalTime().isBefore(
+                                LocalTime.of(
+                                    endTime.split(":")[0].toInt(),
+                                    endTime.split(":")[1].toInt()
+                                ).plusMinutes(1)
+                            )))
+                        }.flatMap {
+                            mutableListOf(teacherName to it)
+                        }.toMutableList()
+                        // occupiedTeacherBreaks.addAll(teacherLockedTime)
+                        teacherLockedTime.forEach {
+                            occupiedTeacherBreaks.add("${it.second.first}${it.second.second}${it.first}")
+                        }
+
+                    }
+                }
+            }
             courseSchedule.totalJson.generalList.courseGroups.forEach {
                 it.presentedCourses.forEach {
-                    motherCourses.add(it)
-                }
-            }
-
-            val all = generateSequence(operatingDates.start.atStartOfDay()) { dt ->
-                dt.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23, 59) }
-            }.map { it..it.plusMinutes(15) }.toMutableList()
-            all.removeAll {
-                it.start.toLocalTime().isBefore(
-                    LocalTime.of(
-                        TotalJson.generalList.workingTime.startTime.split(":")[0].toInt(),
-                        TotalJson.generalList.workingTime.startTime.split(":")[1].toInt()
+                    motherCourses.add(
+                        it
                     )
-                ) ||
-                        it.endInclusive.toLocalTime().isAfter(
-                            LocalTime.of(
-                                TotalJson.generalList.workingTime.endTime.split(":")[0].toInt(),
-                                TotalJson.generalList.workingTime.endTime.split(":")[1].toInt()
-                            )
-                        )
-            }
-            val allTimes = all.flatMap {
-                mutableListOf(
-                    "SATURDAY" to it,
-                    "SUNDAY" to it,
-                    "MONDAY" to it,
-                    "TUESDAY" to it,
-                    "WEDNESDAY" to it,
-                    "THURSDAY" to it
-                )
-            }
-            TotalJson.generalList.teachersNames.forEach {
-                val teacherName = it.teacherName
-                it.openDays.forEach {
-                    val day = it.dayName
-                    val startTime = it.startTime
-                    val endTime = it.endTime
-
-                    val teacherLockedTime = allTimes.filter {
-                        it.first == day && !(it.second.start.toLocalTime().isAfter(
-                            LocalTime.of(
-                                startTime.split(":")[0].toInt(),
-                                startTime.split(":")[1].toInt()
-                            ).minusMinutes(1)
-                        ) && (it.second.endInclusive.toLocalTime().isBefore(
-                            LocalTime.of(
-                                endTime.split(":")[0].toInt(),
-                                endTime.split(":")[1].toInt()
-                            ).plusMinutes(1)
-                        )))
-                    }.flatMap {
-                        mutableListOf(teacherName to it)
-                    }.toMutableList()
-                    occupiedTeacherBreaks.addAll(teacherLockedTime)
                 }
             }
+            motherCourses.forEach {
+                // occupiedTeacherEntryBreaks.add(it.teacher to (it.groupYear.map { it.toString() }.toMutableList()))
+                occupiedTeacherEntryBreaks.add("${it.teacher}${it.groupYear}")
+            }
+            isFirstTime = true
         }
-        courseSchedule.totalJson.generalList.courseGroups.forEach { it.presentedCourses.forEach { motherCourses.add(it) } }
-        motherCourses.forEach {
-            occupiedTeacherEntryBreaks.add(it.teacher to (it.groupYear.map { it.toString() }.toMutableList()))
-        }
-
     }
 
     override fun beforeEntityRemoved(entity: Any?) {
 
     }
 
-    override fun afterVariableChanged(variable: Any, variableName: String) {
-        hardScore += hardScoreChange
-        hardScoreChange = 0
+    override fun afterVariableChanged(entity: Any, variableName: String) {
+        val lecture = (entity as Lecture)
+
+        if (lecture.roomNumber != null && lecture.entry != null && lecture.teacher != null && lecture.period != null && lecture.day != null) {
+            when (variableName) {
+                "day" -> {
+                    if (occupiedRoomBreaks.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}")) {
+                        hardScore -= 100
+                        println("daysajjad")
+                        return
+                    }
+                    if (occupiedTeacherBreaks.contains("${lecture.day.first}${lecture.period.first}${lecture.teacher.first}")) {
+                        hardScore -= 100
+                        println("daysajjad")
+                        return
+                    }
+                    if (occupiedGroupBreaks.contains("${lecture.day.first}${lecture.period.first}${lecture.entry.first}")) {
+                        hardScore -= 100
+                        println("daysajjad")
+                        return
+                    }
+
+
+                }
+                "entry" -> {
+                    if (occupiedGroupBreaks.contains("${lecture.day.first}${lecture.period.first}${lecture.entry.first}")) {
+                        hardScore -= 100
+                        println("entrysajjad")
+                        return
+                    }
+                    if (!occupiedTeacherEntryBreaks.contains("${lecture.teacher.first}${lecture.entry.first}")) {
+                        hardScore -= 100
+                        println("entrysajjad")
+                        return
+                    }
+                }
+                "period" -> {
+                    if (occupiedRoomBreaks.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}")) {
+                        hardScore -= 100
+                        println("daysajjad")
+                        return
+                    }
+                    if (occupiedTeacherBreaks.contains("${lecture.day.first}${lecture.period.first}${lecture.teacher.first}")) {
+                        hardScore -= 100
+                        println("daysajjad")
+                        return
+                    }
+                    if (occupiedGroupBreaks.contains("${lecture.day.first}${lecture.period.first}${lecture.entry.first}")) {
+                        hardScore -= 100
+                        println("daysajjad")
+                        return
+                    }
+
+
+                }
+                "teacher" -> {
+                    if (occupiedTeacherBreaks.contains("${lecture.day.first}${lecture.period.first}${lecture.teacher.first}")) {
+                        hardScore -= 100
+                        println("daysajjad")
+                        return
+                    }
+                    if (!occupiedTeacherEntryBreaks.contains("${lecture.teacher.first}${lecture.entry.first}")) {
+                        hardScore -= 100
+                        println("entrysajjad")
+                        return
+                    }
+
+
+                }
+                "room" -> {
+                    if (occupiedRoomBreaks.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}")) {
+                        hardScore -= 100
+                        println("daysajjad")
+                        return
+                    }
+                }
+            }
+            println("succeed")
+            if (initializedCourses.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}${lecture.entry.first}${lecture.teacher.first}")) {
+                hardScore -= 500
+                return
+            } // else {
+            hardScore += 100
+            println("added")
+/*
+                initializedCourses.add("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}${lecture.entry.first}${lecture.teacher.first}")
+*/
+            occupiedGroupBreaks.add("${lecture.day.first}${lecture.period.first}${lecture.entry.first}")
+            occupiedRoomBreaks.add("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}")
+            occupiedTeacherBreaks.add("${lecture.day.first}${lecture.period.first}${lecture.teacher.first}")
+            occupiedTeacherEntryBreaks.remove("${lecture.teacher.first}${lecture.entry.first}")
+            //  }
+        }
 
     }
 
     override fun calculateScore(): Score<out Score<*>> {
+        println(occupiedTeacherBreaks.toString() + "gholamreza")
         return HardSoftScore.valueOf(hardScore, softScore)
     }
 
@@ -122,89 +228,14 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
     }
 
     override fun beforeVariableChanged(entity: Any, variableName: String) {
-        val lecture = (entity as Lecture)
 
-        if (lecture.roomNumber != null && lecture.entry != null && lecture.teacher != null && lecture.period != null && lecture.day != null) {
-            when (variableName) {
-                "day" -> {
-                    if (checkDayConstraint(lecture)) {
-                        hardScoreChange = -100
-                        println("daysajjad")
-                        return
-                    }
-                    if (initializedCourses.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}${lecture.entry.first}${lecture.teacher.first}")) {
-                        hardScoreChange = -500
-                        return
-                    }
-
-                }
-                "entry" -> {
-                    if (checkEntryConstraints(lecture)) {
-                        hardScoreChange = -100
-                        println("entrysajjad")
-                        return
-                    }
-                    if (initializedCourses.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}${lecture.entry.first}${lecture.teacher.first}")) {
-                        hardScoreChange = -500
-                        return
-                    }
-
-                }
-                "period" -> {
-                    if (checkPeriodConstraint(lecture)) {
-                        hardScoreChange = -100
-                        println("periodsajjad")
-                        return
-                    }
-                    if (initializedCourses.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}${lecture.entry.first}${lecture.teacher.first}")) {
-                        hardScoreChange = -500
-                        return
-                    }
-
-                }
-                "teacher" -> {
-                    if (checkTeacherConstraints(lecture)) {
-                        hardScoreChange = -100
-                        println("teachersajjad")
-                        return
-                    }
-                    if (initializedCourses.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}${lecture.entry.first}${lecture.teacher.first}")) {
-                        hardScoreChange = -500
-                        return
-                    }
-
-                }
-                "room" -> {
-                    if (checkRoomConstraint(lecture)) {
-                        hardScoreChange = -100
-                        println("lecturesajjad")
-                        return
-                    }
-                    if (initializedCourses.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}${lecture.entry.first}${lecture.teacher.first}")) {
-                        hardScoreChange = -500
-                        return
-                    }
-                }
-            }
-
-            if (initializedCourses.contains("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}${lecture.entry.first}${lecture.teacher.first}")) {
-                hardScoreChange = -500
-            } else {
-                hardScoreChange = 100
-                println("added")
-                initializedCourses.add("${lecture.day.first}${lecture.period.first}${lecture.roomNumber.first}${lecture.entry.first}${lecture.teacher.first}")
-                occupiedGroupBreaks.add((lecture.entry.first.map { it.toString() }.toMutableList() to (lecture.day.first to lecture.period.first)))
-                occupiedRoomBreaks.add(lecture.roomNumber.first.toString() to (lecture.day.first to lecture.period.first))
-                occupiedTeacherBreaks.add(lecture.teacher.first to (lecture.day.first to lecture.period.first))
-                occupiedTeacherEntryBreaks.add(lecture.teacher.first to lecture.entry.first.map { it.toString() }.toMutableList())
-            }
-        }
     }
 
 
     /*
     * checking teachers Times is filled or no
     * */
+/*
     private fun checkPeriodConstraint(lecture: Lecture): Boolean {
         if (TimeIsWithinTeacherBreaks(lecture)) {
             hardScoreChange = -100
@@ -220,7 +251,9 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
         }
         return false
     }
+*/
 
+/*
     private fun checkDayConstraint(lecture: Lecture): Boolean {
         if (TimeIsWithinTeacherBreaks(lecture)) {
             hardScoreChange = -100
@@ -236,7 +269,9 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
         }
         return false
     }
+*/
 
+/*
     private fun checkEntryConstraints(lecture: Lecture): Boolean {
         if (doWeHaveThisEntryWithTeacher(lecture)) {
             hardScoreChange = -100
@@ -248,7 +283,9 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
         }
         return false
     }
+*/
 
+/*
     private fun checkTeacherConstraints(lecture: Lecture): Boolean {
         if (doWeHaveThisEntryWithTeacher(lecture)) {
             hardScoreChange = -100
@@ -260,7 +297,9 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
         }
         return false
     }
+*/
 
+/*
     private fun checkRoomConstraint(lecture: Lecture): Boolean {
         if (TimeIsWithinRoomTimes(lecture)) {
             hardScoreChange = -100
@@ -268,7 +307,9 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
         }
         return false
     }
+*/
 
+/*
     private fun TimeIsWithinTeacherBreaks(lecture: Lecture): Boolean {
         val timesList = splitTime(lecture.period.first)
         val lectureDay = lecture.day.first
@@ -287,7 +328,9 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
             addPeriodTeacher(lecture)
         return condition
     }
+*/
 
+/*
     private fun timeIsWithinGroupTimes(lecture: Lecture): Boolean {
 
         val timesList = splitTime(lecture.period.first)
@@ -307,7 +350,9 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
             addPeriodEntry(lecture)
         return condition
     }
+*/
 
+/*
     private fun doWeHaveThisEntryWithTeacher(lecture: Lecture): Boolean {
         var index = 0
         val condition = occupiedTeacherEntryBreaks.any {
@@ -323,7 +368,9 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
             removeEntryTeacher(lecture)
         return !condition
     }
+*/
 
+/*
     private fun TimeIsWithinRoomTimes(lecture: Lecture): Boolean {
         val timesList = splitTime(lecture.period.first)
         val lectureDay = lecture.day.first
@@ -344,6 +391,7 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
         }
         return condition
     }
+*/
 
 
     private fun splitTime(time: ClosedRange<LocalDateTime>): MutableList<ClosedRange<LocalDateTime>> {
@@ -358,20 +406,28 @@ class IncrementalScoreCalculator : AbstractIncrementalScoreCalculator<CourseSche
     }
 
 
+/*
     private fun addPeriodClassRoom(lecture: Lecture) {
         occupiedRoomBreaks.add(lecture.roomNumber.first.toString() to (lecture.day.first to lecture.period.first))
     }
+*/
 
+/*
     private fun addPeriodTeacher(lecture: Lecture) {
         occupiedTeacherBreaks.add(lecture.teacher.first to (lecture.day.first to lecture.period.first))
     }
+*/
 
+/*
     private fun addPeriodEntry(lecture: Lecture) {
         occupiedGroupBreaks.add(lecture.entry.first.map { it.toString() }.toMutableList() to (lecture.day.first to lecture.period.first))
     }
+*/
 
+/*
     private fun removeEntryTeacher(lecture: Lecture) {
         occupiedTeacherEntryBreaks.remove(lecture.teacher.first to lecture.entry.first.map { it.toString() })
     }
+*/
 
 }

@@ -4,12 +4,12 @@
     <!-- <solutionClass>calculations.CourseSchedule</solutionClass>
      <entityClass>calculations.Lecture</entityClass>-->
     <scoreDirectorFactory>
-        <incrementalScoreCalculatorClass>calculations.IncrementalScoreCalculator</incrementalScoreCalculatorClass>
+        <easyScoreCalculatorClass>calculations.ScoreCalculator</easyScoreCalculatorClass>
     </scoreDirectorFactory>
     <termination>
         <secondsSpentLimit>10</secondsSpentLimit>
     </termination>
-   <!-- <termination>
-        <bestScoreLimit>600hard/0soft</bestScoreLimit>
-    </termination>-->
+    <!-- <termination>
+         <bestScoreLimit>600hard/0soft</bestScoreLimit>
+     </termination>-->
 </solver>
