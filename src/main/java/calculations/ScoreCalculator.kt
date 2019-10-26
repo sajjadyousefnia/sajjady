@@ -13,16 +13,18 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
     val logger = LoggerFactory.getLogger("CourseSchedule")
 
     override fun calculateScore(courseSchedule: CourseSchedule): Score<*> {
-        val asssignedArray = hashSetOf<String>()
-        val teachersTimes = hashSetOf<String>()
-        val classesTimes = hashSetOf<String>()
+        val assignedTotalCourses = hashSetOf<String>()
+
+        val teachersFreeTimes = hashSetOf<Pair<String, Pair<String, ClosedRange<LocalTime>>>>()
+        val classesFilledTimes = hashSetOf<Pair<String, Pair<String, LocalDateTime>>>()
+
         // val groupsTimes = hashSetOf<String>()
         val teacherBreaks = arrayListOf<Pair<String, LocalDateTime>>()
         val groupBreaks = arrayListOf<Pair<String, LocalDateTime>>()
         val openCourses = arrayListOf<Pair<ArrayList<Int>, String>>()
 
 
-        val motherCourses = arrayListOf<CourseDataClass>()
+
         courseSchedule.totalJson.generalList.courseGroups.forEach {
             it.presentedCourses.forEach {
                 for (counter in 0 until it.recurrences) {
@@ -37,6 +39,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                 }
             }
         }
+
         /* motherCourses.forEach {
              val recuurence = it.recurrences
              openCourses.add(it.groupYear to it.teacher)
@@ -46,19 +49,34 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         }*/
 
         // println("$motherCourses  reza ")
-        val openTimes = courseSchedule.totalJson.generalList.teachersNames
+        courseSchedule.totalJson.generalList.teachersNames.forEach {
+            val teacherName = it.teacherName
+            it.openDays.forEach {
+                teachersFreeTimes.add(
+                    teacherName to (it.dayName to LocalTime.of(
+                        it.startTime.split(":")[0].toInt(),
+                        it.startTime.split(":")[1].toInt()
+                    )..LocalTime.of(
+                        it.endTime.split(":")[0].toInt(),
+                        it.endTime.split(":")[1].toInt()
+                    ))
+                )
+            }
+        }
+
+
         var hardScore = -1
         var softScore = -1
         for ((level, lecture) in courseSchedule.lectureList.withIndex()) {
             if (lecture != null) {
                 if (lecture.entry != null) {
                     if (lecture.teacher.second && lecture.entry.second && lecture.period.second && lecture.roomNumber.second && lecture.day.second) {
-                        if (asssignedArray.contains("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}") || teachersTimes.contains(
+                        if (assignedTotalCourses.contains("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}") /*|| teachersFreeTimes.contains(
                                 "${lecture.teacher}${lecture.period}${lecture.day}"
-                            ) || classesTimes.contains("${lecture.roomNumber}${lecture.period}${lecture.day}")
+                            ) *//*|| classesFilledTimes.contains("${lecture.roomNumber}${lecture.period}${lecture.day}")*/
                             || lecture.entry.first.any { it.toString() == "${it}${lecture.period}${lecture.day}" }
                             || !openCourses.contains(lecture.entry.first to lecture.teacher.first)
-                            || !isWithinRange(lecture, openTimes)
+                            /*|| !isWithinRange(lecture, openTimes)*/
                             || teacherBreaks.any {
                                 it.first == "${lecture.teacher}${lecture.day}" &&
                                         lecture.period.first.start == it.second
@@ -90,8 +108,6 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                             )
 
 
-                            teachersTimes.add("${lecture.teacher}${lecture.period}${lecture.day}")
-                            classesTimes.add("${lecture.roomNumber}${lecture.period}${lecture.day}")
 
                             lecture.entry.first.forEach {
 
@@ -100,7 +116,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
 
                             }
 
-                            asssignedArray.add("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}")
+                            assignedTotalCourses.add("${lecture.teacher}${lecture.entry}${lecture.period}${lecture.roomNumber}${lecture.day}")
                             hardScore += 4
                             if (lecture.period.first.start.minute == 0) {
                                 softScore += 10
@@ -115,22 +131,25 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                 lecture.period.first.start.minusMinutes(120)..lecture.period.first.endInclusive.minusMinutes(
                                     120
                                 )
-                            if (asssignedArray.contains("${lecture.teacher}${lecture.entry}${nextTime to true}${lecture.roomNumber}${lecture.day}")) {
+                            if (assignedTotalCourses.contains("${lecture.teacher}${lecture.entry}${nextTime to true}${lecture.roomNumber}${lecture.day}")) {
                                 softScore += 100
                             }
 
-                            if (asssignedArray.contains("${lecture.teacher}${lecture.entry}${beforeTime to true}${lecture.roomNumber}${lecture.day}")) {
+                            if (assignedTotalCourses.contains("${lecture.teacher}${lecture.entry}${beforeTime to true}${lecture.roomNumber}${lecture.day}")) {
                                 softScore += 100
                             }
-
-
                             // println("$hardScore sajjad")
                             /*  } else {
                                   hardScore -= 4
                               }*/
                         }
+
+                        teachersFreeTimes.add("${lecture.teacher}${lecture.period}${lecture.day}")
+                        classesFilledTimes.add("${lecture.roomNumber}${lecture.period}${lecture.day}")
+
+
                     } else {
-                        hardScore -= 4
+                        hardScore -= 1000
                         // println("$hardScore sajjad")
                     }
                 }

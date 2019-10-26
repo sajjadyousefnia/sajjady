@@ -102,6 +102,7 @@ object MyClass {
     }
 
     private suspend fun startToNewSchedule(pipelineContext: PipelineContext<Unit, ApplicationCall>, myres: FirstClass) {
+
         val all = calculateAll()
         val motherCourses = mutableListOf<CourseDataClass>()
         myres.generalList.courseGroups.forEach {

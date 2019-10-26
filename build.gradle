@@ -48,6 +48,8 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.2.3'
     compile 'org.optaplanner:optaplanner-core:7.9.0.Final'
     compile 'com.github.salomonbrys.kotson:kotson:2.5.0'
+    implementation "com.soywiz.korlibs.klock:klock-jvm:1.7.0"
+
 }
 
 
