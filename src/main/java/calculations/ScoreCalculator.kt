@@ -281,12 +281,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                         )
                                     )
                                 }
-
-
-
-
-
-                                hardScore += 1000
+                                hardScore += 5
                             } else {
                                 hardScore -= 1000
                             }

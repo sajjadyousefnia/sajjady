@@ -112,15 +112,6 @@ object MyClass {
             }
         }
 
-        // openTimes = myres.generalList.teachersNames
-/*
-        openCourses = motherCourses.flatMap { courseDataClass ->
-            mutableListOf(
-                courseDataClass.groupYear.toString() to
-                        courseDataClass.teacher
-            ).toMutableList()
-        }.toMutableList()
-*/
         unsolvedCourseSchedule = CourseSchedule()
         unsolvedCourseSchedule!!.totalJson = myres
         for (i in motherCourses) {
@@ -157,7 +148,8 @@ object MyClass {
         val solvedCourseSchedule = solver.solve(unsolvedCourseSchedule)
         var valueForPrint = ""
         solvedCourseSchedule.lectureList.forEach { valueForPrint += it.day.toString() + it.teacher.toString() + it.entry.toString() + it.period.toString() + it.roomNumber.toString() }
-
+        val scheduleScore = solvedCourseSchedule.score.hardScore
+        val coursesClone = motherCourses
         val listForExport = solvedCourseSchedule.lectureList.flatMap {
             mutableListOf(
                 jsonObject(
@@ -184,8 +176,11 @@ object MyClass {
 
             }
         }
-        // listForExport.toSortedSet(lengthComparator)
-        pipelineContext.call.respond(Gson().toJson(listForExport.sortedWith(lengthComparator)))
+        if (scheduleScore > 0) {
+            pipelineContext.call.respond(Gson().toJson(listForExport.sortedWith(lengthComparator)))
+        } else {
+            pipelineContext.call.respond("Infeasible")
+        }
     }
 
     private fun calculateAll(): MutableList<ClosedRange<LocalDateTime>> {
