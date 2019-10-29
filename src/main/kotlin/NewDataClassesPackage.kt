@@ -80,7 +80,7 @@ data class CourseDataClass(
     val courseType: String,
     @SerializedName("groupYear")
     @Expose
-    var groupYear: ArrayList<Int>
+    val groupYear: ArrayList<Int>
 )
 
 data class TeachersInfoDataClass(

@@ -1,6 +1,8 @@
 package calculations
 
-import com.example.operatingDates
+import java.time.LocalTime
+import kotlin.time.ExperimentalTime
+
 
 /*
     object ClassTest {
@@ -79,188 +81,29 @@ import com.example.operatingDates
 
 */
 object ClassTest {
+    @ExperimentalTime
     @JvmStatic
     fun main(args: Array<String>) {
 
-        val json = "{\n" +
-                "  \"requested\": {\n" +
-                "    \"workingTime\": {\n" +
-                "      \"startTime\": \"8:00\",\n" +
-                "      \"endTime\": \"18:00\"\n" +
-                "    },\n" +
-                "    \"teachersNames\": [\n" +
-                "      {\n" +
-                "        \"teacherName\": \"farughi\",\n" +
-                "        \"openDays\": [\n" +
-                "          {\n" +
-                "            \"dayName\": \"SATURDAY\",\n" +
-                "            \"startTime\": \"08:00\",\n" +
-                "            \"endTime\": \"12:00\"\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"dayName\": \"SUNDAY\",\n" +
-                "            \"startTime\": \"08:00\",\n" +
-                "            \"endTime\": \"12:00\"\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"dayName\": \"MONDAY\",\n" +
-                "            \"startTime\": \"08:00\",\n" +
-                "            \"endTime\": \"12:00\"\n" +
-                "          }\n" +
-                "        ]\n" +
-                "      },\n" +
-                "      {\n" +
-                "        \"teacherName\": \"zahmatkesh\",\n" +
-                "        \"openDays\": [\n" +
-                "          {\n" +
-                "            \"dayName\": \"TUESDAY\",\n" +
-                "            \"startTime\": \"08:00\",\n" +
-                "            \"endTime\": \"12:00\"\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"dayName\": \"WEDNESDAY\",\n" +
-                "            \"startTime\": \"08:00\",\n" +
-                "            \"endTime\": \"12:00\"\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"dayName\": \"THURSDAY\",\n" +
-                "            \"startTime\": \"08:00\",\n" +
-                "            \"endTime\": \"12:30\"\n" +
-                "          }\n" +
-                "        ]\n" +
-                "      }\n" +
-                "    ],\n" +
-                "    \"classes\": [\n" +
-                "      {\n" +
-                "        \"classVolume\": 30,\n" +
-                "        \"classNumber\": 1,\n" +
-                "        \"classType\": \"theory\"\n" +
-                "      },\n" +
-                "      {\n" +
-                "        \"classVolume\": 30,\n" +
-                "        \"classNumber\": 2,\n" +
-                "        \"classType\": \"theory\"\n" +
-                "      }\n" +
-                "    ],\n" +
-                "    \"educationGroupName\": \"Computer\",\n" +
-                "    \"courseGroups\": [\n" +
-                "      {\n" +
-                "        \"courseYear\": 95,\n" +
-                "        \"coach\": \"zahmatkesh\",\n" +
-                "        \"presentedCourses\": [\n" +
-                "          {\n" +
-                "            \"id\": 1000,\n" +
-                "            \"recurrences\": 1,\n" +
-                "            \"teacher\": \"zahmatkesh\",\n" +
-                "            \"courseName\": \"math\",\n" +
-                "            \"units\": 3,\n" +
-                "            \"courseType\": \"theory\",\n" +
-                "            \"groupYear\": [\n" +
-                "              95\n" +
-                "            ]\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"id\": 1001,\n" +
-                "            \"recurrences\": 1,\n" +
-                "            \"teacher\": \"farughi\",\n" +
-                "            \"courseName\": \"physics\",\n" +
-                "            \"units\": 3,\n" +
-                "            \"courseType\": \"theory\",\n" +
-                "            \"groupYear\": [\n" +
-                "              95,\n" +
-                "              96\n" +
-                "            ]\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"id\": 1001,\n" +
-                "            \"recurrences\": 1,\n" +
-                "            \"teacher\": \"farughi\",\n" +
-                "            \"courseName\": \"physics 2\",\n" +
-                "            \"units\": 3,\n" +
-                "            \"courseType\": \"theory\",\n" +
-                "            \"groupYear\": [\n" +
-                "              95,\n" +
-                "              96\n" +
-                "            ]\n" +
-                "          }\n" +
-                "        ]\n" +
-                "      },\n" +
-                "      {\n" +
-                "        \"courseYear\": 96,\n" +
-                "        \"coach\": \"zahmatkesh\",\n" +
-                "        \"presentedCourses\": [\n" +
-                "          {\n" +
-                "            \"id\": 1002,\n" +
-                "            \"recurrences\": 1,\n" +
-                "            \"teacher\": \"zahmatkesh\",\n" +
-                "            \"courseName\": \"math2\",\n" +
-                "            \"units\": 3,\n" +
-                "            \"courseType\": \"theory\",\n" +
-                "            \"groupYear\": [\n" +
-                "              96\n" +
-                "            ]\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"id\": 1003,\n" +
-                "            \"recurrences\": 1,\n" +
-                "            \"teacher\": \"zahmatkesh\",\n" +
-                "            \"courseName\": \"math3\",\n" +
-                "            \"units\": 3,\n" +
-                "            \"courseType\": \"theory\",\n" +
-                "            \"groupYear\": [\n" +
-                "              96\n" +
-                "            ]\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"id\": 1004,\n" +
-                "            \"recurrences\": 1,\n" +
-                "            \"teacher\": \"zahmatkesh\",\n" +
-                "            \"courseName\": \"physics2\",\n" +
-                "            \"units\": 3,\n" +
-                "            \"courseType\": \"theory\",\n" +
-                "            \"groupYear\": [\n" +
-                "              96\n" +
-                "            ]\n" +
-                "          },\n" +
-                "          {\n" +
-                "            \"id\": 1005,\n" +
-                "            \"recurrences\": 1,\n" +
-                "            \"teacher\": \"farughi\",\n" +
-                "            \"courseName\": \"physics3\",\n" +
-                "            \"units\": 3,\n" +
-                "            \"courseType\": \"theory\",\n" +
-                "            \"groupYear\": [\n" +
-                "              96\n" +
-                "            ]\n" +
-                "          }\n" +
-                "        ]\n" +
-                "      }\n" +
-                "    ],\n" +
-                "    \"entriesYears\": [\n" +
-                "      95,\n" +
-                "      96\n" +
-                "    ]\n" +
-                "  }\n" +
-                "}"
-        val all = generateSequence(operatingDates.start.atTime(10, 0)) { dt ->
-            dt.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(12, 0) }
-        }.map { it..it.plusMinutes(15) }.toMutableList()
-
-        println(all.toString())
-
+        val time = LocalTime.of(8, 0)..LocalTime.of(9, 0)
+        time.start.plusMinutes(30)
+        time.endInclusive.plusMinutes(30)
+        println(time)
 
     }
 
-    fun findFactorial(num: Int): Long {
-        if (num < 1) {
-            println("Please provide non-negative number.")
-        }
-        var factorial: Long = 1
-        for (i in num downTo 2) {
-            factorial = factorial * i
-        }
-        return factorial
+}
+
+fun findFactorial(num: Int): Long {
+    if (num < 1) {
+        println("Please provide non-negative number.")
     }
+    var factorial: Long = 1
+    for (i in num downTo 2) {
+        factorial = factorial * i
+    }
+    return factorial
+
 }
 /*
     fun main(args: Array<String>) {
