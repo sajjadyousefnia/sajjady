@@ -179,7 +179,9 @@ object MyClass {
         if (scheduleScore > 0) {
             pipelineContext.call.respond(Gson().toJson(listForExport.sortedWith(lengthComparator)))
         } else {
+            println(Gson().toJson(listForExport.sortedWith(lengthComparator)).toString() + "farshad")
             pipelineContext.call.respond("Infeasible")
+            println(scheduleScore.toString())
         }
     }
 

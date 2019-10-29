@@ -19,7 +19,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
 
 
         val days = arrayListOf<String>("SATURDAY", "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY")
-        for (counter in 0 until courseSchedule.totalJson.generalList.courseGroups.size) {
+        for (counter in 1..courseSchedule.totalJson.generalList.classes.size) {
             days.forEach {
                 classesFreeTimes.add(
                     counter to MutableDayClockPair(
@@ -101,7 +101,8 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                         courseName = it.courseName.toString() + "###" + counter.toString(),
                         recurrences = 1,
                         id = it.id, courseType = "theory",
-                        groupYear = it.groupYear, units = it.units
+                        groupYear = it.groupYear,
+                        units = it.units
                     )
                     openCourses.add(courseClass.groupYear to courseClass.teacher)
                 }
@@ -133,7 +134,6 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
             }
         }
 
-
         var hardScore = -1
         var softScore = -1
         for ((level, lecture) in courseSchedule.lectureList.withIndex()) {
@@ -155,10 +155,11 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                 checkIsNotBeforeAnyClass(lecture, groupOpenTimes, teachersFreeTimes)
 
                             ) {
-                                openCourses.removeIf {
-                                    it.first == lecture.entry &&
-                                            it.second == lecture.teacher.first
-                                }
+                                openCourses.remove(
+                                    openCourses.first {
+                                        it.first == lecture.entry.first &&
+                                                it.second == lecture.teacher.first
+                                    })
 
                                 val currentTime = DateTimeRangeSet(
                                     DateTimeRange
@@ -206,17 +207,6 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                             it.second.first == lecture.day.first
                                 }.second.second -= (currentTime + timeToDeleteUntilHour)
 
-/*
-                                try {
-                                    teachersFreeTimes.first {
-                                        it.first == lecture.teacher.first &&
-                                                it.second.first == lecture.day.first
-                                    }.second.second -= timeToDeleteUntilHour
-                                } catch (e: java.lang.Exception) {
-
-                                }
-*/
-
 
                                 classesFreeTimes.first {
                                     it.first.toString() == lecture.roomNumber.first
@@ -253,7 +243,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                                             1,
                                                             lecture.period.first.endInclusive.hour,
                                                             lecture.period.first.endInclusive.minute
-                                                        )
+                                                        ).plus(TimeSpan(30.minutes.milliseconds))
                                                     )
                                                 )
                                             )
@@ -275,7 +265,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                                         1,
                                                         lecture.period.first.endInclusive.hour,
                                                         lecture.period.first.endInclusive.minute
-                                                    )
+                                                    ).plus(TimeSpan(30.minutes.milliseconds))
                                                 )
                                             )
                                         )
@@ -318,14 +308,14 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                     2020, 1, 1,
                                     lecture.period.first.start.hour,
                                     lecture.period.first.start.minute
-                                ).minus(TimeSpan(30.minutes.milliseconds)),
+                                ),
                                 DateTime(
                                     2020,
                                     1,
                                     1,
                                     lecture.period.first.start.hour,
                                     lecture.period.first.start.minute
-                                )
+                                ).plus((TimeSpan(30.minutes.milliseconds)))
                             )
                         ).toString() == "[]"
             }
@@ -343,14 +333,14 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                 2020, 1, 1,
                                 lecture.period.first.start.hour,
                                 lecture.period.first.start.minute
-                            ).minus(TimeSpan(30.minutes.milliseconds)),
+                            ),
                             DateTime(
                                 2020,
                                 1,
                                 1,
                                 lecture.period.first.start.hour,
                                 lecture.period.first.start.minute
-                            )
+                            ).plus((TimeSpan(30.minutes.milliseconds)))
                         )
                     ).toString() == "[]"
         }
@@ -375,7 +365,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         lecture: Lecture,
         groupOpenTimes: ArrayList<Pair<Int, MutableDayClockPair>>
     ): Boolean {
-        return lecture.entry.first.all {
+        val entries = lecture.entry.first.all {
             val year = it
             return groupOpenTimes.any {
                 year == it.first
@@ -402,8 +392,8 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
 
 
         }
-
-
+        println("entriesBoolean is $entries")
+        return entries
     }
 
     private fun classesTimesIsOk(
@@ -417,7 +407,11 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                     &&
                     it.second.second.contains(
                         DateTimeRange(
-                            DateTime(2020, 1, 1, lecture.period.first.start.hour, lecture.period.first.start.minute),
+                            DateTime(
+                                2020, 1, 1,
+                                lecture.period.first.start.hour,
+                                lecture.period.first.start.minute
+                            ),
                             DateTime(
                                 2020,
                                 1,
@@ -436,6 +430,8 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         lecture: Lecture,
         teachersFreeTimes: ArrayList<Pair<String, MutableDayClockPair>>
     ): Boolean {
+        println("entrance1${lecture.teacher} ${lecture.entry} ${lecture.period} ${lecture.roomNumber} ${lecture.day}")
+        println("entrance2$teachersFreeTimes")
         val teacherBoolean = teachersFreeTimes.any {
             it.first == lecture.teacher.first
                     &&
