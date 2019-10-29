@@ -90,7 +90,7 @@ object MyClass {
 
                     } catch (e: Exception) {
                         call.respond(
-                            e.toString() + "\n" + e.printStackTrace()
+                            e.toString() + "\n" + e.printStackTrace() + e.cause
 
                             /*+ e.localizedMessage.toString() + "\n" + e.printStackTrace()*/
                         )
@@ -146,10 +146,15 @@ object MyClass {
 
         val solver = solverFactory.buildSolver()
         val solvedCourseSchedule = solver.solve(unsolvedCourseSchedule)
+        solvedCourseSchedule.lectureList.forEach {
+            println("lecture list is ${it.day}${it.roomNumber}${it.period}${it.entry}${it.teacher}")
+        }
         var valueForPrint = ""
+
         solvedCourseSchedule.lectureList.forEach { valueForPrint += it.day.toString() + it.teacher.toString() + it.entry.toString() + it.period.toString() + it.roomNumber.toString() }
+
+
         val scheduleScore = solvedCourseSchedule.score.hardScore
-        val coursesClone = motherCourses
         val listForExport = solvedCourseSchedule.lectureList.flatMap {
             mutableListOf(
                 jsonObject(

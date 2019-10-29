@@ -34,12 +34,29 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
             }
         }
 
+        courseSchedule.totalJson.generalList.entriesYears.forEach {
+            val year = it
+            days.forEach {
+                groupOpenTimes.add(
+                    year to MutableDayClockPair(
+                        it, DateTimeRangeSet(
+                            DateTimeRange(
+                                DateTime(2020, 1, 1, 8, 0),
+                                DateTime(2020, 1, 1, 18, 30)
+                            )
+                        )
+                    )
+                )
+            }
+        }
+/*
         courseSchedule.totalJson.generalList.courseGroups.forEach {
             it.presentedCourses.forEach {
                 val years = it.groupYear
                 years.forEach {
                     val year = it
                     days.forEach {
+
                         groupOpenTimes.add(
                             year to MutableDayClockPair(
                                 it, DateTimeRangeSet(
@@ -54,43 +71,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                 }
             }
         }
-/*
-        courseSchedule.totalJson.generalList.courseGroups.forEach {
-            it.presentedCourses.forEach {
-                val years = it.groupYear
-                days.forEach {
-                    groupOpenTimes.add(
-                        years to MutableDayClockPair(
-                            it, DateTimeRangeSet(
-                                DateTimeRange(
-                                    DateTime(2020, 1, 1, 8, 0),
-                                    DateTime(2020, 1, 1, 18, 30)
-                                )
-                            )
-                        )
-                    )
-                }
-
-            }
-        }
 */
-
-/*
-        for (counter in 0 until courseSchedule.totalJson.generalList.entriesYears.size) {
-            val group = courseSchedule.totalJson.generalList.entriesYears[counter].toString()
-            days.forEach {
-                groupOpenTimes.add(
-                    group to (it to DateTimeRangeSet(
-                        DateTimeRange(
-                            DateTime(2020, 1, 1, 8, 0),
-                            DateTime(2020, 1, 1, 18, 30)
-                        )
-                    ))
-                )
-            }
-        }
-*/
-
 
 
         courseSchedule.totalJson.generalList.courseGroups.forEach {
@@ -151,8 +132,8 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                             if (teachersTimeIsOK(lecture, teachersFreeTimes) &&
                                 classesTimesIsOk(lecture, classesFreeTimes)
                                 && entriesTimesIsOK(lecture, groupOpenTimes) &&
-                                openCoursesIsOK(lecture, openCourses) &&
-                                checkIsNotBeforeAnyClass(lecture, groupOpenTimes, teachersFreeTimes)
+                                openCoursesIsOK(lecture, openCourses)
+                            // && checkIsNotBeforeAnyClass(lecture, groupOpenTimes, teachersFreeTimes)
 
                             ) {
                                 openCourses.remove(
@@ -283,7 +264,11 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                     } else {
                         hardScore -= 1000
                     }
+                } else {
+                    hardScore -= 1000
                 }
+            } else {
+                hardScore -= 1000
             }
         }
         return HardSoftScore.valueOf(hardScore, softScore)
@@ -345,7 +330,8 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                     ).toString() == "[]"
         }
 
-        return (teachers && entries)
+        println("teachersandentries are $teachers$entries")
+        return !(teachers && entries)
 
     }
 
@@ -354,10 +340,12 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         lecture: Lecture,
         openCourses: ArrayList<Pair<ArrayList<Int>, String>>
     ): Boolean {
-        return openCourses.any {
+        val courses = openCourses.any {
             it.second == lecture.teacher.first &&
                     it.first == lecture.entry.first
         }
+        println("courses is $courses")
+        return courses
 
     }
 
