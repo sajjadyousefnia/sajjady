@@ -14,7 +14,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
         val teachersFreeTimes = arrayListOf<Pair<String, MutableDayClockPair>>()
         val groupOpenTimes = arrayListOf<Pair<Int, MutableDayClockPair>>()
         val openCourses = arrayListOf<Pair<ArrayList<Int>, String>>()
-        val selectedTeachersTimes = arrayListOf<Pair<String, MutableDayClockPair>>()
+        // val selectedTeachersTimes = arrayListOf<Pair<String, MutableDayClockPair>>()
         val selectedGroupOpenTimes = arrayListOf<Pair<Int, MutableDayClockPair>>()
 
 
@@ -49,29 +49,6 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                 )
             }
         }
-/*
-        courseSchedule.totalJson.generalList.courseGroups.forEach {
-            it.presentedCourses.forEach {
-                val years = it.groupYear
-                years.forEach {
-                    val year = it
-                    days.forEach {
-
-                        groupOpenTimes.add(
-                            year to MutableDayClockPair(
-                                it, DateTimeRangeSet(
-                                    DateTimeRange(
-                                        DateTime(2020, 1, 1, 8, 0),
-                                        DateTime(2020, 1, 1, 18, 30)
-                                    )
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-        }
-*/
 
 
         courseSchedule.totalJson.generalList.courseGroups.forEach {
@@ -90,7 +67,9 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
             }
         }
 
-
+        (openCourses.forEach {
+            println("${it.first}${it.second}")
+        })
 
 
 
@@ -114,7 +93,9 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                 )
             }
         }
-
+        (teachersFreeTimes.forEach {
+            println("${it.first}${it.second.first}${it.second.second}")
+        })
         var hardScore = -1
         var softScore = -1
         for ((level, lecture) in courseSchedule.lectureList.withIndex()) {
@@ -123,7 +104,8 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                     if (lecture.teacher.second
                         && lecture.entry.second
                         && lecture.period.second
-                        && lecture.roomNumber.second && lecture.day.second
+                        && lecture.roomNumber.second
+                        && lecture.day.second
                     ) {
                         if (lecture.teacher.first != null && lecture.entry.first != null && lecture.period.first != null && lecture.roomNumber.first != null &&
                             lecture.day.first != null
@@ -141,7 +123,6 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                         it.first == lecture.entry.first &&
                                                 it.second == lecture.teacher.first
                                     })
-
                                 val currentTime = DateTimeRangeSet(
                                     DateTimeRange
                                         (
@@ -207,6 +188,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                 }
 
 
+/*
                                 selectedTeachersTimes.add(
                                     lecture.teacher.first to
                                             MutableDayClockPair(
@@ -229,6 +211,7 @@ class ScoreCalculator : EasyScoreCalculator<CourseSchedule> {
                                                 )
                                             )
                                 )
+*/
                                 lecture.entry.first.forEach {
                                     selectedGroupOpenTimes.add(
                                         it to MutableDayClockPair(

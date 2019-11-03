@@ -155,6 +155,7 @@ object MyClass {
 
 
         val scheduleScore = solvedCourseSchedule.score.hardScore
+        var courseCounter = 0
         val listForExport = solvedCourseSchedule.lectureList.flatMap {
             mutableListOf(
                 jsonObject(
@@ -163,7 +164,8 @@ object MyClass {
                     "entry" to jsonArray(it.entry.first),
                     "room" to it.roomNumber.first,
                     "start" to it.period.first.start.toLocalTime().toString(),
-                    "end" to it.period.first.endInclusive.toLocalTime().toString()
+                    "end" to it.period.first.endInclusive.toLocalTime().toString(),
+                    "course" to motherCourses[courseCounter++].courseName
                 )
             )
         }
